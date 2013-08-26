@@ -1,0 +1,48 @@
+name:                memoryquiz
+version:             0.1.0.0
+synopsis:            a memory quiz game
+description:         a demo haskell app for learning the Dominic system
+homepage:            not yet
+license:             BSD3
+license-file:        LICENSE
+author:              Eric Rasmussen
+maintainer:          eric@chromaticleaves.com
+copyright:           2013 Eric Rasmussen
+build-type:          Simple
+cabal-version:       >=1.8
+
+executable memoryquiz
+  Hs-Source-Dirs: src
+  main-is: Main.hs
+  -- GHC-Options:    -Wall
+  other-modules: Association
+               , Digit
+               , Letter
+               , Parser
+               , Quiz
+
+  build-depends: base        == 4.5.*
+               , mtl         >= 2.1.2
+               , vector      >= 0.10.0.1
+               , parsec      >= 3.1.3
+               , cmdargs     == 0.10.5
+               , random      == 1.0.1.1
+
+
+Executable runtests
+    main-is: Spec.hs
+    hs-source-dirs: test, src
+    other-modules: Association
+                 , Digit
+                 , Letter
+                 , Parser
+                 , Quiz
+
+    build-depends: base        == 4.5.*
+                 , mtl         >= 2.1.2
+                 , vector      >= 0.10.0.1
+                 , parsec      >= 3.1.3
+                 , cmdargs     == 0.10.5
+                 , random      == 1.0.1.1
+                 , hspec       == 1.4.4
+                 , QuickCheck  == 2.6
