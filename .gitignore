@@ -4,4 +4,7 @@ cabal-dev
 *.hi
 *.chi
 *.chs.h
-.virthualenv
+.hsenv
+*~
+sample*
+.DS_STORE
