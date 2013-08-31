@@ -99,8 +99,10 @@ eitherAnswer s = case lower s of
 
 -- | Attempts to build a question generator from command line args
 questionGenerator :: String -> String -> Either String (Association -> Question)
-questionGenerator from to = makeQuestion <$> eitherView from <*> eitherAnswer to
-  where makeQuestion f t a = Question (f a) (t a)
+questionGenerator from to = makeQuestion
+                            <$> eitherView from
+                            <*> eitherAnswer to
+                            <*> eitherView to
 
 
 -- | Helper function to lowercase a String

@@ -19,6 +19,8 @@ module Quiz
        , playGame
        , QuizState (..)
        , Question  (..)
+       , makeQuestion
+       , AnswerChecker
        )
        where
 
@@ -80,21 +82,39 @@ instance Show QuizState where
 -- -----------------------------------------------------------------------------
 -- * Questions!
 
-type Response = String
+type Response      = String
 
+type Result        = Either String String
+
+type AnswerChecker = Association -> String -> Response
 
 -- | Our primary question type with a showable question and a predicate to check
 -- an answer
-data Question = Question String (Response -> Bool)
+data Question = Question {
+    question  :: String
+  , evaluator :: Response -> Result
+  }
 
--- the prompt and the question's show representation shouldn't be tightly
--- coupled as they are here
 instance Show Question where
-  show (Question s _) = "> " ++ s ++ ": "
+  show Question { question=q } = q
+
+
+makeQuestion :: RenderAssociation
+             -> (Association -> Response -> Bool)
+             -> RenderAssociation
+             -> (Association -> Question)
+makeQuestion from to correction = \assoc ->
+  Question {
+      question  = from assoc
+    , evaluator = \s -> if (to assoc) s
+                          then Right "Correct!"
+                          else Left $
+                               "We were looking for: " ++ (correction assoc)
+    }
 
 -- | Helper to test a given Response against a Question's check answer predicate
-checkResponse :: Question -> Response -> Bool
-checkResponse (Question _ isCorrect) response = isCorrect response
+checkResponse :: Question -> Response -> Result
+checkResponse (Question {evaluator=eval}) response = eval response
 
 -- | Run a continuous game in our Quiz monad
 playGame :: Quiz ()
@@ -102,7 +122,9 @@ playGame = do
   st <- get
   let maxInt = V.length (associations st)
   rand <- getRand maxInt
-  let randAssoc = (associations st) ! rand  -- unsafe: no bounds checking
+  -- TODO: switch to a total lookup function and handle the Nothing edge case by
+  -- throwing an error
+  let randAssoc = (associations st) ! rand
   playRound randAssoc >> playGame
 
 -- | Run a single round in our Quiz monad
@@ -114,8 +136,16 @@ playRound assoc = do
   answer <- liftIO getLine
   -- TODO: really shouldn't use errors for a normal condition here
   when (answer == "quit") $ throwError ("See you later! Score: " ++ show st)
-  put $ scoreResponse (checkResponse question answer) st
+  res <- communicateResult question answer
+  put $ scoreResponse res st
 
+
+-- | Communicates the result to the user and returns an int
+communicateResult :: Question -> Response -> Quiz Bool
+communicateResult q a = either (printWith False) (printWith True) (checkResponse q a)
+  where printWith b s = do
+          liftIO $ putStrLn s
+          return b
 
 -- | The total questions asked is incremented by one for each answered question,
 -- and the score will be incremented by 1 if the answer was correct.
@@ -125,6 +155,8 @@ scoreResponse correct (QuizState {score=s, total=t, genQuestion=g, associations=
     where modifier = if correct then 1 else 0
 
 -- | Get a random number for some max bound in the Quiz monad
+-- TODO: generalize this so other strategies can be swapped in, like going in
+-- order or reverse
 getRand :: Int -> Quiz Int
 getRand max = liftIO $ getStdRandom $ randomR (0, max)
 
@@ -145,5 +177,8 @@ formatPercentage x y = showFFloat (Just 2) percentage "%"
 
 -- | Basic question prompt
 prompt :: Question -> IO ()
-prompt q = putStr (show q) >> hFlush stdout
+prompt q = putStr (questionPrompt q) >> hFlush stdout
 
+-- | Display a question in a prompt format
+questionPrompt :: Question -> String
+questionPrompt Question { question=q } = "> " ++ q ++ ": "
