@@ -21,6 +21,7 @@ module Quiz
        , Question  (..)
        , makeQuestion
        , AnswerChecker
+       , getRand
        )
        where
 
@@ -116,15 +117,17 @@ makeQuestion from to correction = \assoc ->
 checkResponse :: Question -> Response -> Result
 checkResponse (Question {evaluator=eval}) response = eval response
 
--- | Run a continuous game in our Quiz monad
-playGame :: Quiz ()
-playGame = do
+-- | Run a continuous game in our Quiz monad. Takes as its sole argument a
+-- function to produce an Int to be used to access the next association. This
+-- can be used to swap strategies, such as asking questions in a random order,
+-- asking in order, asking in reverse, etc.
+playGame :: Quiz Int -> Quiz ()
+playGame nextIndex = do
   st <- get
-  let maxInt = V.length (associations st)
-  rand <- getRand maxInt
-  let randAssoc = (associations st) !? rand
-  case randAssoc of
-    Just r  -> playRound r >> playGame
+  ind <- nextIndex
+  let maybeAssoc = (associations st) !? ind
+  case maybeAssoc of
+    Just r  -> playRound r >> playGame nextIndex
     Nothing -> throwError "Programmer error: out of bounds access attempt"
 
 -- | Run a single round in our Quiz monad
@@ -155,10 +158,11 @@ scoreResponse correct (QuizState {score=s, total=t, genQuestion=g, associations=
     where modifier = if correct then 1 else 0
 
 -- | Get a random number for some max bound in the Quiz monad
--- TODO: generalize this so other strategies can be swapped in, like going in
--- order or reverse
-getRand :: Int -> Quiz Int
-getRand max = liftIO $ getStdRandom $ randomR (0, max)
+getRand :: Quiz Int
+getRand = do
+  st <- get
+  let maxInt = V.length (associations st)
+  liftIO $ getStdRandom $ randomR (0, maxInt)
 
 
 -- -----------------------------------------------------------------------------
