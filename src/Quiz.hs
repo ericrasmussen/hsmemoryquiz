@@ -19,7 +19,7 @@ module Quiz
        , playGame
        , QuizState (..)
        , Question  (..)
-       , makeQuestion
+       , makeQuestionGen
        , AnswerChecker
        , getRand
        )
@@ -100,18 +100,22 @@ instance Show Question where
   show Question { question=q } = q
 
 
-makeQuestion :: RenderAssociation
-             -> (Association -> Response -> Bool)
-             -> RenderAssociation
-             -> (Association -> Question)
-makeQuestion from to correction = \assoc ->
+-- | Create a reusable function to generate Questions from Associations
+makeQuestionGen :: RenderAssociation                 -- project a question form
+                -> (Association -> Response -> Bool) -- check an answer
+                -> RenderAssociation                 -- project an answer form
+                -> (Association -> Question)         -- the generator we return
+makeQuestionGen toQuestion checkAnswer toAnswer = \assoc ->
   Question {
-      question  = from assoc
-    , evaluator = \s -> if (to assoc) s
-                          then Right "Correct!"
-                          else Left $
-                               "We were looking for: " ++ (correction assoc)
+      question  = toQuestion assoc
+    , evaluator = toResult   (checkAnswer assoc) (toAnswer assoc)
     }
+
+-- | Checks a response against a predicate and converts it to a Result
+toResult :: (String -> Bool) -> String -> Response -> Result
+toResult p a s = if p s
+                 then Right "Correct!"
+                 else Left $ "We were looking for: " ++ a
 
 -- | Helper to test a given Response against a Question's check answer predicate
 checkResponse :: Question -> Response -> Result
