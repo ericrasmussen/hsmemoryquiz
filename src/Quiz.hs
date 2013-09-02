@@ -40,7 +40,7 @@ import Control.Monad.Error
 import Control.Monad.Reader
 import Control.Monad.State
 
-import Data.Vector ((!))
+import Data.Vector ((!?))
 import qualified Data.Vector as V
 
 
@@ -122,10 +122,10 @@ playGame = do
   st <- get
   let maxInt = V.length (associations st)
   rand <- getRand maxInt
-  -- TODO: switch to a total lookup function and handle the Nothing edge case by
-  -- throwing an error
-  let randAssoc = (associations st) ! rand
-  playRound randAssoc >> playGame
+  let randAssoc = (associations st) !? rand
+  case randAssoc of
+    Just r  -> playRound r >> playGame
+    Nothing -> throwError "Programmer error: out of bounds access attempt"
 
 -- | Run a single round in our Quiz monad
 playRound :: Association -> Quiz ()
