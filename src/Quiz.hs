@@ -123,7 +123,7 @@ checkResponse (Question {evaluator=eval}) response = eval response
 -- asking in order, asking in reverse, etc.
 playGame :: Quiz Int -> Quiz ()
 playGame nextIndex = do
-  st <- get
+  st  <- get
   ind <- nextIndex
   let maybeAssoc = (associations st) !? ind
   case maybeAssoc of
