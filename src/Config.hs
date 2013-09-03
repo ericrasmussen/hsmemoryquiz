@@ -64,6 +64,9 @@ config = helpArgs
 -- -----------------------------------------------------------------------------
 -- * Attempt to build a QuizState from command line args
 
+-- maybe TODO: move most of this to ErrorT with Identity or IO to cut down on
+-- some of the boilerplate
+
 -- | Takes a config object (built from command line flags) and will either
 -- return a QuizState or a String error
 fromConfig :: Config -> IO (Either String QuizState)
