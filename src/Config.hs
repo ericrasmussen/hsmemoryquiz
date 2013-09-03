@@ -90,7 +90,7 @@ eitherView s = case lower s of
   _          -> Left  $ invalidCommand s
 
 -- | Will try to build an answer checker based on the command line arg
-eitherAnswer :: String -> Either String (Association -> String -> Bool)
+eitherAnswer :: String -> Either String (Association -> String -> Result)
 eitherAnswer s = case lower s of
   "digits"   -> Right $ \assoc -> checkAnswer (view assoc :: DigitPair)
   "letters"  -> Right $ \assoc -> checkAnswer (view assoc :: LetterPair)
@@ -102,7 +102,7 @@ questionGenerator :: String -> String -> Either String (Association -> Question)
 questionGenerator from to = makeQuestionGen
                             <$> eitherView from
                             <*> eitherAnswer to
-                            <*> eitherView to
+--                            <*> eitherView to
 
 
 -- | Helper function to lowercase a String

@@ -20,6 +20,8 @@ module Association
        , view
        , checkAnswer
        , makeAssociation
+       , Result
+       , Response
        )
        where
 
@@ -43,7 +45,6 @@ data Association = Association {
 instance Show Association where
   show (Association ds m) = concat [show ds, ": ", m]
 
-
 -- -----------------------------------------------------------------------------
 -- * Type aliases
 
@@ -51,34 +52,44 @@ type Mnemonic          = String
 type AssociationDB     = Vector Association
 type RenderAssociation = Association -> String
 
+-- these are quiz-y
+type Result            = Either String String
+type Response          = String
 
 -- -----------------------------------------------------------------------------
--- * Functions for viewing/projecting Associations
-
--- | Typeclass to render and check answers for Associations projected as other
--- types.
-class (Show a) => Projection a where
-  view        :: Association -> a
-  checkAnswer :: a -> String -> Bool
-
-instance Projection DigitPair where
-  view (Association ds _) = ds
-  checkAnswer ds          = \s -> show ds == s
-
-instance Projection LetterPair where
-  view (Association ds _) = digitsToLetters ds
-  checkAnswer ls          = \s -> show ls == upper s
-
-instance Projection Mnemonic where
-  view (Association _ m) = m
-  checkAnswer m          = \s -> upper s `isInfixOf` upper m
-
+-- * Functions for working with Associations
 
 -- | Smart constructor for Associations
 makeAssociation :: DigitPair -> Mnemonic -> Association
 makeAssociation ds m = Association ds trimmed
   where trimmed = dropWhile (==' ') m
 
+
+-- | Typeclass to render and check answers for Associations projected as other
+-- types.
+class (Show a) => Projection a where
+  view        :: Association -> a
+  checkAnswer :: a -> Response -> Result
+
+instance Projection DigitPair where
+  view (Association ds _) = ds
+  checkAnswer ds          = toResult (==digits) digits where digits = show ds
+
+instance Projection LetterPair where
+  view (Association ds _) = digitsToLetters ds
+  checkAnswer ls          = toResult ((==letters) . upper) letters
+    where letters = show ls
+
+instance Projection Mnemonic where
+  view (Association _ m) = m
+  checkAnswer m          = toResult ((`isInfixOf` upper m) . upper) m
+
+
+-- | Checks a response against a predicate and converts it to a Result
+toResult :: (Response -> Bool) -> String -> Response -> Result
+toResult p a s = if p s
+                 then Right "Correct!"
+                 else Left $ "We were looking for: " ++ a
 
 -- -----------------------------------------------------------------------------
 -- * Unexported helper functions

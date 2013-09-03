@@ -83,9 +83,6 @@ instance Show QuizState where
 -- -----------------------------------------------------------------------------
 -- * Questions!
 
-type Response      = String
-
-type Result        = Either String String
 
 type AnswerChecker = Association -> String -> Response
 
@@ -101,21 +98,15 @@ instance Show Question where
 
 
 -- | Create a reusable function to generate Questions from Associations
-makeQuestionGen :: RenderAssociation                 -- project a question form
-                -> (Association -> Response -> Bool) -- check an answer
-                -> RenderAssociation                 -- project an answer form
-                -> (Association -> Question)         -- the generator we return
-makeQuestionGen toQuestion checkAnswer toAnswer = \assoc ->
+makeQuestionGen :: RenderAssociation                   -- project an association
+                -> (Association -> Response -> Result) -- check an answer
+                -> (Association -> Question)           -- generate a question
+makeQuestionGen toQuestion checkAnswer = \assoc ->
   Question {
-      question  = toQuestion assoc
-    , evaluator = toResult   (checkAnswer assoc) (toAnswer assoc)
+      question  = toQuestion  assoc
+    , evaluator = checkAnswer assoc
     }
 
--- | Checks a response against a predicate and converts it to a Result
-toResult :: (String -> Bool) -> String -> Response -> Result
-toResult p a s = if p s
-                 then Right "Correct!"
-                 else Left $ "We were looking for: " ++ a
 
 -- | Helper to test a given Response against a Question's check answer predicate
 checkResponse :: Question -> Response -> Result
