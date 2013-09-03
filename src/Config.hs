@@ -42,9 +42,10 @@ import System.IO.Error          (tryIOError)
 
 -- | Records to represent command line args
 data Config = Config {
-    from :: String
-  , to   :: String
-  , path :: String
+    from  :: String
+  , to    :: String
+  , path  :: String
+  , index :: String
   } deriving (Show, Data, Typeable)
 
 -- | Additional help messages for specific flags
@@ -52,6 +53,8 @@ helpArgs = Config {
     from = "" &= help "You can be quizzed on digits, letters, or mnemonics"
   , to   = "" &= help "You can provide answers as digits, letters, or mnemonics"
   , path = "" &= help "The location of your associations text file"
+  , index = "random"
+           &= help "How to generate questions: random, ordered, reversed"
   }
 
 -- | Add additional detail to the --help output
@@ -71,17 +74,22 @@ config = helpArgs
 -- return a QuizState or a String error
 fromConfig :: Config -> IO (Either String QuizState)
 fromConfig cfg = do
-  let questionGen  = questionGenerator (from cfg) (to cfg)
   contents         <- readFileSafe (path cfg)
   let assocs       = parseFileSafe contents
-  return $ eitherQuizState questionGen (leftToString assocs)
+  let questionGen  = questionGenerator (from cfg) (to cfg)
+  let ind          = eitherIndex (index cfg)
+  return $ eitherQuizState questionGen (leftToString assocs) ind
 
 
 -- | Attempts to build a QuizState from the given question generator and DB
 eitherQuizState :: Either String (Association -> Question)
                 -> Either String AssociationDB
+                -> Either String (Quiz Int)
                 -> Either String QuizState
-eitherQuizState questionGen assocs = QuizState 0 0 <$> questionGen <*> assocs
+eitherQuizState questionGen assocs ind = QuizState 0 0
+                                           <$> questionGen
+                                           <*> assocs
+                                           <*> ind
 
 
 -- | Will try to build a question viewer based on the command line arg
@@ -98,6 +106,15 @@ eitherAnswer s = case lower s of
   "digits"   -> Right $ \assoc -> checkAnswer (view assoc :: DigitPair)
   "letters"  -> Right $ \assoc -> checkAnswer (view assoc :: LetterPair)
   "mnemonic" -> Right $ \assoc -> checkAnswer (view assoc :: Mnemonic)
+  _          -> Left  $ invalidCommand s
+
+-- | Will try to choose an indexing strategy for choosing the next Association
+-- during a quiz.
+eitherIndex :: String -> Either String (Quiz Int)
+eitherIndex s = case lower s of
+  "random"   -> Right getRand
+  "ordered"  -> Right getOrdered
+  "reversed" -> Right getReversed
   _          -> Left  $ invalidCommand s
 
 -- | Attempts to build a question generator from command line args

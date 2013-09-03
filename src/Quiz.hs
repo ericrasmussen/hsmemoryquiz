@@ -21,6 +21,8 @@ module Quiz
        , Question  (..)
        , makeQuestionGen
        , getRand
+       , getOrdered
+       , getReversed
        )
        where
 
@@ -65,9 +67,10 @@ runQuiz scoreBoard k = runStateT (runErrorT (getQuiz k)) scoreBoard
 data QuizState = QuizState {
     score        :: Int
   , total        :: Int
-  -- TODO: ideally these last two would be in a Reader
+  -- TODO: ideally these would be in a Reader
   , genQuestion  :: Association -> Question
   , associations :: AssociationDB
+  , getIndex     :: Quiz Int
   }
 
 
@@ -113,13 +116,13 @@ checkResponse (Question {evaluator=eval}) response = eval response
 -- function to produce an Int to be used to access the next association. This
 -- can be used to swap strategies, such as asking questions in a random order,
 -- asking in order, asking in reverse, etc.
-playGame :: Quiz Int -> Quiz ()
-playGame nextIndex = do
+playGame :: Quiz ()
+playGame = do
   st  <- get
-  ind <- nextIndex
+  ind <- getIndex st
   let maybeAssoc = (associations st) !? ind
   case maybeAssoc of
-    Just r  -> playRound r >> playGame nextIndex
+    Just r  -> playRound r >> playGame
     Nothing -> throwError "Programmer error: out of bounds access attempt"
 
 -- | Run a single round in our Quiz monad
@@ -145,17 +148,31 @@ communicateResult q a = either (printWith False) (printWith True) (checkResponse
 -- | The total questions asked is incremented by one for each answered question,
 -- and the score will be incremented by 1 if the answer was correct.
 scoreResponse :: Bool -> QuizState -> QuizState
-scoreResponse correct (QuizState {score=s, total=t, genQuestion=g, associations=a}) =
-  QuizState { score=s+modifier, total=t+1, genQuestion=g, associations=a }
+scoreResponse correct st@(QuizState { score=s, total=t }) =
+  st { score=s+modifier, total=t+1 }
     where modifier = if correct then 1 else 0
 
 -- | Get a random number for some max bound in the Quiz monad
 getRand :: Quiz Int
 getRand = do
   st <- get
-  let maxInt = V.length (associations st)
-  liftIO $ getStdRandom $ randomR (0, maxInt)
+  let len = V.length (associations st)
+  liftIO $ getStdRandom $ randomR (0, len)
 
+-- | Run through the associations in order
+getOrdered :: Quiz Int
+getOrdered = do
+  st <- get
+  let len = V.length (associations st)
+  return $ total st `mod` len
+
+-- | Run through the associations in reverse
+getReversed :: Quiz Int
+getReversed = do
+  st <- get
+  let len = V.length (associations st) - 1
+  let asked = total st `mod` len
+  return $ len - asked
 
 -- -----------------------------------------------------------------------------
 -- * Helper functions private to this module

@@ -26,7 +26,7 @@ runGame :: QuizState -> IO ()
 runGame q = do
   -- TODO: have the config include a strategy for accessing associations so
   -- getRand won't be hardcoded here
-  res <- runQuiz q (playGame getRand)
+  res <- runQuiz q playGame
   case res of
     (Left  e, _) -> putStrLn e
     (Right _, q) -> putStrLn $ "Final score: " ++ show q

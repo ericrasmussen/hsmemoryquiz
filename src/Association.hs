@@ -82,6 +82,7 @@ instance Projection LetterPair where
 
 instance Projection Mnemonic where
   view (Association _ m) = m
+  -- TODO: use a better test here ("" `isInfixOf` "foo" == True)
   checkAnswer m          = toResult ((`isInfixOf` upper m) . upper) m
 
 
