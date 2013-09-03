@@ -102,7 +102,6 @@ questionGenerator :: String -> String -> Either String (Association -> Question)
 questionGenerator from to = makeQuestionGen
                             <$> eitherView from
                             <*> eitherAnswer to
---                            <*> eitherView to
 
 
 -- | Helper function to lowercase a String
