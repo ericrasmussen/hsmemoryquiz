@@ -20,7 +20,6 @@ module Quiz
        , QuizState (..)
        , Question  (..)
        , makeQuestionGen
-       , AnswerChecker
        , getRand
        )
        where
@@ -83,8 +82,6 @@ instance Show QuizState where
 -- -----------------------------------------------------------------------------
 -- * Questions!
 
-
-type AnswerChecker = Association -> String -> Response
 
 -- | Our primary question type with a showable question and a predicate to check
 -- an answer
