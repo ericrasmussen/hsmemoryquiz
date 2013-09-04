@@ -10,8 +10,8 @@
 -- Letters. But only the ones we need.
 
 module Letter
-       ( Letter
-       , LetterPair
+       ( Letter (..)
+       , LetterPair (..)
        , fromDigit
        , digitsToLetters
        )
@@ -23,7 +23,7 @@ import Digit
 -- | Each Digit can be represented as one of these Letters in the Dominic
 -- memory system.
 data Letter = A | B | C | D | E | S | G | H | N | O
-  deriving (Show, Eq)
+  deriving (Show, Eq, Enum)
 
 -- | We will need to project DigitPairs as LetterPairs
 data LetterPair = LetterPair Letter Letter
