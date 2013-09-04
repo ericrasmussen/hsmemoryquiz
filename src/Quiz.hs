@@ -156,8 +156,8 @@ scoreResponse correct st@(QuizState { score=s, total=t }) =
 getRand :: Quiz Int
 getRand = do
   st <- get
-  let len = V.length (associations st)
-  liftIO $ getStdRandom $ randomR (0, len)
+  let maxInt = V.length (associations st) - 1
+  liftIO $ getStdRandom $ randomR (0, maxInt)
 
 -- | Run through the associations in order
 getOrdered :: Quiz Int
@@ -170,9 +170,9 @@ getOrdered = do
 getReversed :: Quiz Int
 getReversed = do
   st <- get
-  let len = V.length (associations st) - 1
+  let len = V.length (associations st)
   let asked = total st `mod` len
-  return $ len - asked
+  return $ (len - 1) - asked
 
 -- -----------------------------------------------------------------------------
 -- * Helper functions private to this module
