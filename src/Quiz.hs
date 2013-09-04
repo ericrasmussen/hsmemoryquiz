@@ -18,6 +18,9 @@ module Quiz
        , runQuiz
        , playGame
        , QuizState (..)
+       , newQuizState
+       , Registry
+       , makeRegistry
        , Question  (..)
        , makeQuestionGen
        , getRand
@@ -51,15 +54,27 @@ import qualified Data.Vector as V
 
 -- | The exported Quiz type that wraps our ErrorT, StateT, and IO stack
 newtype Quiz a = Quiz {
-  getQuiz :: ErrorT String (StateT QuizState IO) a
-  } deriving (Monad, MonadIO, MonadError String, MonadState QuizState)
-
+  getQuiz :: ErrorT String (ReaderT Registry (StateT QuizState IO)) a
+  } deriving ( Monad
+             , MonadIO
+             , MonadError String
+             , MonadState QuizState
+             , MonadReader Registry
+             )
 
 -- | Takes a starting QuizState and evaluates a Quiz block
-runQuiz :: QuizState -> Quiz a -> IO (Either String a, QuizState)
-runQuiz scoreBoard k = runStateT (runErrorT (getQuiz k)) scoreBoard
+runQuiz :: Registry -> QuizState -> Quiz a -> IO (Either String a, QuizState)
+runQuiz registry scoreBoard k = do
+  let err = runErrorT $ getQuiz k
+  let env = runReaderT err registry
+  runStateT env scoreBoard
 
-
+-- | Read-only registry for application settings
+data Registry = Registry {
+    genQuestion  :: Association -> Question
+  , associations :: AssociationDB
+  , getIndex     :: Quiz Int
+}
 
 -- | Keep track of the score (number of correct answers) and the total questions
 -- asked. Also contains a generator that knows how to create a Question from a
@@ -67,10 +82,6 @@ runQuiz scoreBoard k = runStateT (runErrorT (getQuiz k)) scoreBoard
 data QuizState = QuizState {
     score        :: Int
   , total        :: Int
-  -- TODO: ideally these would be in a Reader
-  , genQuestion  :: Association -> Question
-  , associations :: AssociationDB
-  , getIndex     :: Quiz Int
   }
 
 
@@ -81,6 +92,20 @@ instance Show QuizState where
     where fraction   = formatFraction   s t
           percentage = formatPercentage s t
 
+-- | Creates a fresh QuizState starting at 0/0 questions answered
+newQuizState :: QuizState
+newQuizState = QuizState { score = 0, total = 0 }
+
+-- | Constructs a Registry
+makeRegistry :: (Association -> Question)
+             -> AssociationDB
+             -> Quiz Int
+             -> Registry
+makeRegistry gen assocs ind = Registry {
+    genQuestion  = gen
+  , associations = assocs
+  , getIndex     = ind
+  }
 
 -- -----------------------------------------------------------------------------
 -- * Questions!
@@ -118,9 +143,9 @@ checkResponse (Question {evaluator=eval}) response = eval response
 -- asking in order, asking in reverse, etc.
 playGame :: Quiz ()
 playGame = do
-  st  <- get
-  ind <- getIndex st
-  let maybeAssoc = (associations st) !? ind
+  env <- ask
+  ind <- getIndex env
+  let maybeAssoc = (associations env) !? ind
   case maybeAssoc of
     Just r  -> playRound r >> playGame
     Nothing -> throwError "Programmer error: out of bounds access attempt"
@@ -128,8 +153,9 @@ playGame = do
 -- | Run a single round in our Quiz monad
 playRound :: Association -> Quiz ()
 playRound assoc = do
-  st <- get
-  let question = genQuestion st $ assoc
+  st  <- get
+  env <- ask
+  let question = genQuestion env $ assoc
   liftIO $ prompt question
   answer <- liftIO getLine
   -- TODO: really shouldn't use errors for a normal condition here
@@ -155,22 +181,24 @@ scoreResponse correct st@(QuizState { score=s, total=t }) =
 -- | Get a random number for some max bound in the Quiz monad
 getRand :: Quiz Int
 getRand = do
-  st <- get
-  let maxInt = V.length (associations st) - 1
+  env <- ask
+  let maxInt = V.length (associations env) - 1
   liftIO $ getStdRandom $ randomR (0, maxInt)
 
 -- | Run through the associations in order
 getOrdered :: Quiz Int
 getOrdered = do
-  st <- get
-  let len = V.length (associations st)
+  st  <- get
+  env <- ask
+  let len = V.length (associations env)
   return $ total st `mod` len
 
 -- | Run through the associations in reverse
 getReversed :: Quiz Int
 getReversed = do
-  st <- get
-  let len = V.length (associations st)
+  st  <- get
+  env <- ask
+  let len = V.length (associations env)
   let asked = total st `mod` len
   return $ (len - 1) - asked
 

@@ -22,11 +22,10 @@ import Control.Monad.State
 -- someone types "quit" at the prompt. A possible TODO is having a user
 -- optionally supply a number of times to be tested so that quitting early
 -- would be an actual exception condition.
-runGame :: QuizState -> IO ()
-runGame q = do
-  -- TODO: have the config include a strategy for accessing associations so
-  -- getRand won't be hardcoded here
-  res <- runQuiz q playGame
+runGame :: Registry -> IO ()
+runGame registry = do
+  let state = newQuizState
+  res <- runQuiz registry state playGame
   case res of
     (Left  e, _) -> putStrLn e
     (Right _, q) -> putStrLn $ "Final score: " ++ show q
@@ -34,11 +33,11 @@ runGame q = do
 -- | Parses command line args, attempts to build a QuizState, and either runs
 -- the game or displays the error.
 main = do
-  cfg    <- cmdArgs config
-  quizSt <- fromConfig cfg
-  case quizSt of
-    Left e  -> putStrLn e
-    Right r -> runGame r
+  cfg <- cmdArgs config
+  env <- fromConfig cfg
+  case env of
+    Left  e -> putStrLn e
+    Right r -> runGame  r
 
 
 

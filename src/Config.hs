@@ -72,21 +72,21 @@ config = helpArgs
 
 -- | Takes a config object (built from command line flags) and will either
 -- return a QuizState or a String error
-fromConfig :: Config -> IO (Either String QuizState)
+fromConfig :: Config -> IO (Either String Registry)
 fromConfig cfg = do
   contents         <- readFileSafe (path cfg)
   let assocs       = parseFileSafe contents
   let questionGen  = questionGenerator (from cfg) (to cfg)
   let ind          = eitherIndex (index cfg)
-  return $ eitherQuizState questionGen (leftToString assocs) ind
+  return $ eitherRegistry questionGen (leftToString assocs) ind
 
 
 -- | Attempts to build a QuizState from the given question generator and DB
-eitherQuizState :: Either String (Association -> Question)
+eitherRegistry :: Either String (Association -> Question)
                 -> Either String AssociationDB
                 -> Either String (Quiz Int)
-                -> Either String QuizState
-eitherQuizState questionGen assocs ind = QuizState 0 0
+                -> Either String Registry
+eitherRegistry questionGen assocs ind = makeRegistry
                                            <$> questionGen
                                            <*> assocs
                                            <*> ind
