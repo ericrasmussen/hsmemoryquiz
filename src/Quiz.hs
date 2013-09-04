@@ -137,10 +137,7 @@ makeQuestionGen toQuestion checkAnswer = \assoc ->
 checkResponse :: Question -> Response -> Result
 checkResponse (Question {evaluator=eval}) response = eval response
 
--- | Run a continuous game in our Quiz monad. Takes as its sole argument a
--- function to produce an Int to be used to access the next association. This
--- can be used to swap strategies, such as asking questions in a random order,
--- asking in order, asking in reverse, etc.
+-- | Run a continuous game in our Quiz monad
 playGame :: Quiz ()
 playGame = do
   env <- ask
