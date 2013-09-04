@@ -80,8 +80,8 @@ data Registry = Registry {
 -- asked. Also contains a generator that knows how to create a Question from a
 -- given Association.
 data QuizState = QuizState {
-    score        :: Int
-  , total        :: Int
+    score :: Int
+  , total :: Int
   }
 
 
