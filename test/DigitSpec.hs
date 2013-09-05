@@ -26,8 +26,8 @@ spec = do
   describe "DigitPairs" $ do
     it "can be converted to and from chars" $
       property $ \digits -> case show digits of
-        (c:d:_) -> maybeDigitPair c d == Just digits
-        _       -> False
+        (c:d:[]) -> maybeDigitPair c d == Just digits
+        _        -> False
 
     it "can only be produced from two chars each in 0-9" $
       property $ \(c, d) -> case maybeDigitPair c d of
