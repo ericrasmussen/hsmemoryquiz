@@ -24,6 +24,8 @@ import Digit
 
 import Association
 
+import Control.Monad (void)
+
 import Text.Parsec.Prim
 import Text.Parsec.Char
 import Text.ParserCombinators.Parsec
@@ -75,4 +77,4 @@ eol =   char '\n'
 -- | Void parser to detect the end of input or a line ending. This makes
 -- trailing newlines optional in the associations text file.
 endOfInput :: Monad m => ParsecT String u m ()
-endOfInput = eof <|> (eol >> return ())
+endOfInput = eof <|> void eol
