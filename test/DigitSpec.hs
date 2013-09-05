@@ -13,14 +13,14 @@ spec :: Spec
 spec = do
   describe "Digits" $ do
     it "can be converted to and from chars" $
-      property $ \d -> Just d == (fromChar . head . show) d
+      property $ \d -> (Just . id) d == (fromChar . head . show) d
 
     it "can only be produced from the chars 0-9" $
       property $ \c -> case fromChar c of
         Just d  -> c `elem` ['0'..'9']
         Nothing -> True
 
-    it "corresponds to the list of chars 0-9" $
+    it "correspond to the list of chars 0-9" $
       map Just [Zero .. Nine] `shouldBe` map fromChar ['0'..'9']
 
   describe "DigitPairs" $ do
