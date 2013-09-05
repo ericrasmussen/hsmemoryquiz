@@ -29,9 +29,8 @@ spec = do
         (c:d:_) -> maybeDigitPair c d == Just digits
         _       -> False
 
-    it "can only be produced from two chars in the range 0-9" $
+    it "can only be produced from two chars each in 0-9" $
       property $ \(c, d) -> case maybeDigitPair c d of
         Just ds -> all (`elem` ['0'..'9']) $ show ds
         Nothing -> True
-
 
