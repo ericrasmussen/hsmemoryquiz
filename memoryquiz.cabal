@@ -37,6 +37,7 @@ Executable runtests
                  , Letter
                  , Parser
                  , Quiz
+                 , Util
 
     build-depends: base        == 4.5.*
                  , mtl         >= 2.1.2
