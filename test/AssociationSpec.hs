@@ -19,26 +19,26 @@ import Data.List   (isInfixOf)
 
 spec :: Spec
 spec = do
-  describe "Association smart constructor" $ do
-    it "trims mnemonic whitespace" $ do
+  describe "Association smart constructor" $
+    it "trims mnemonic whitespace" $
       property $ \ds m -> mnemonic (makeAssociation ds m) == dropWhile (==' ') m
 
   describe "Association projections" $ do
-    it "can project a DigitPair" $ do
+    it "can project a DigitPair" $
       property $ \a -> (view a :: DigitPair) == digits a
 
-    it "can check DigitPair answers" $ do
+    it "can check DigitPair answers" $
       property $ \a s -> case checkAnswer (view a :: DigitPair) s of
         Left  err -> show (digits a) `isInfixOf` err
         Right r   -> show (digits a) == s
 
-    it "can verify the digits projection matches the original" $ do
+    it "can verify the digits projection matches the original" $
       property $ \a -> let ds = show (digits a) in
         case checkAnswer (view a :: DigitPair) ds of
           Left  _ -> False
           Right _ -> True
 
-    it "can project a LetterPair" $ do
+    it "can project a LetterPair" $
       property $ \a -> (view a :: LetterPair) == (digitsToLetters . digits) a
 
     it "can check LetterPair answers" $ do
@@ -47,13 +47,13 @@ spec = do
         Left  err -> toLetters a `isInfixOf` err
         Right _   -> toLetters a == s
 
-    it "can verify the letters projection matches the original" $ do
+    it "can verify the letters projection matches the original" $
       property $ \a -> let ls = show . digitsToLetters $ digits a in
         case checkAnswer (view a :: LetterPair) ls of
           Left  _ -> False
           Right _ -> True
 
-    it "can project a Mnemonic" $ do
+    it "can project a Mnemonic" $
       property $ \a -> (view a :: Mnemonic) == mnemonic a
 
     it "can check mnemonic answers" $ do
@@ -62,7 +62,7 @@ spec = do
         Left  err -> mnemonic a `isInfixOf` err
         Right _   -> upper s `isInfixOf` upper (mnemonic a)
 
-    it "can verify the mnemonic projection matches the original" $ do
+    it "can verify the mnemonic projection matches the original" $
       property $ \a -> case checkAnswer (view a :: Mnemonic) (mnemonic a) of
         Left  _ -> False
         Right _ -> True

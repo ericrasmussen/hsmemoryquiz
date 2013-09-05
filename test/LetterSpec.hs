@@ -11,7 +11,7 @@ import Letter
 
 spec :: Spec
 spec = do
-  describe "Letters" $ do
+  describe "Letters" $
     it "can be created from a digit" $ do
       let mapping = zip [A .. O] ([One .. Nine] ++ [Zero])
       property $ \d -> case lookup (fromDigit d) mapping of
