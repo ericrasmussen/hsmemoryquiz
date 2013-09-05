@@ -1,10 +1,11 @@
 module LetterSpec
        where
 
+import Util()
+
 import Test.Hspec
 import Test.QuickCheck
 
-import Util
 import Digit
 import Letter
 

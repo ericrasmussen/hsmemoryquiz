@@ -14,7 +14,9 @@ cabal-version:       >=1.8
 executable memoryquiz
   Hs-Source-Dirs: src
   main-is: Main.hs
-  -- GHC-Options:    -Wall
+
+  GHC-Options: -fwarn-unused-imports
+
   other-modules: Association
                , Digit
                , Letter
@@ -30,8 +32,11 @@ executable memoryquiz
 
 
 Executable runtests
-    main-is: Spec.hs
     hs-source-dirs: test, src
+    main-is: Spec.hs
+
+    GHC-Options: -fwarn-unused-imports
+
     other-modules: Association
                  , Digit
                  , Letter
