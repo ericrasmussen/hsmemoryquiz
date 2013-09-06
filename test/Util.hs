@@ -5,6 +5,7 @@ module Util
        )
        where
 
+import Quiz
 import Digit
 import Letter
 import Association
@@ -38,6 +39,22 @@ instance Arbitrary Association where
 instance Arbitrary AssociationDB where
   arbitrary = Vector.fromList <$> listOf1 arbitrary
 
+instance Arbitrary QuizState where
+  arbitrary = QuizState <$> arbitrary <*> arbitrary
+
+instance Arbitrary Question where
+  arbitrary = do
+    q <- arbitrary :: Gen String
+    r <- arbitrary :: Gen (Either String String)
+    let eval = \s -> r
+    return $ Question { question = q, evaluator = eval }
+
+instance Arbitrary (Quiz Int) where
+  arbitrary = elements [indexRand, indexOrdered, indexReversed]
+
+-- required for using Quiz Int as a property
+instance Show (Quiz Int) where
+  show _ = "<quiz int>"
 
 -- -----------------------------------------------------------------------------
 -- * Helper functions to constrain generated data
