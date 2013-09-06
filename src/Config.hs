@@ -112,9 +112,9 @@ eitherAnswer s = case lower s of
 -- during a quiz.
 eitherIndex :: String -> Either String (Quiz Int)
 eitherIndex s = case lower s of
-  "random"   -> Right getRand
-  "ordered"  -> Right getOrdered
-  "reversed" -> Right getReversed
+  "random"   -> Right indexRand
+  "ordered"  -> Right indexOrdered
+  "reversed" -> Right indexReversed
   _          -> Left  $ invalidCommand s
 
 -- | Attempts to build a question generator from command line args

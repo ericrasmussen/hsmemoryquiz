@@ -19,13 +19,13 @@ module Quiz
        , playGame
        , QuizState (..)
        , newQuizState
-       , Registry
+       , Registry (..)
        , makeRegistry
        , Question  (..)
        , makeQuestionGen
-       , getRand
-       , getOrdered
-       , getReversed
+       , indexRand
+       , indexOrdered
+       , indexReversed
        )
        where
 
@@ -176,23 +176,23 @@ scoreResponse correct st@(QuizState { score=s, total=t }) =
     where modifier = if correct then 1 else 0
 
 -- | Get a random number for some max bound in the Quiz monad
-getRand :: Quiz Int
-getRand = do
+indexRand :: Quiz Int
+indexRand = do
   env <- ask
   let maxInt = V.length (associations env) - 1
   liftIO $ getStdRandom $ randomR (0, maxInt)
 
 -- | Run through the associations in order
-getOrdered :: Quiz Int
-getOrdered = do
+indexOrdered :: Quiz Int
+indexOrdered = do
   st  <- get
   env <- ask
   let len = V.length (associations env)
   return $ total st `mod` len
 
 -- | Run through the associations in reverse
-getReversed :: Quiz Int
-getReversed = do
+indexReversed :: Quiz Int
+indexReversed = do
   st  <- get
   env <- ask
   let len = V.length (associations env)
