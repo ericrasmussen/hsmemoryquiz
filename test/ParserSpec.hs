@@ -8,9 +8,8 @@ import Text.Parsec.Prim
 
 import qualified Data.Vector as V
 
-import Util
+import Util()
 
-import Digit
 import Parser
 
 
@@ -24,15 +23,17 @@ spec = do
 
     it "parses a vector of associations" $
       property $ \assocs -> let as = unlines . map show . V.toList $ assocs in
-        case parse parseAssociationDB "" as of
+        case runParse as of
           Left  _      -> False
-          Right result -> result == assocs
+          Right result -> result == id assocs
 
 
-  describe "test digit pair parser" $
-    it "parses a valid digit pair or fails" $
+  describe "DigitPair parser" $
+    it "parses two digit chars as a digit pair" $
       property $ \s -> let firstTwo = take 2 s in
         case parse parseDigitPair "" s of
-          Right (DigitPair n m) -> show n ++ show m == firstTwo
-          Left  _               -> not $ leadingDigits firstTwo
+          Right pair -> show pair == firstTwo
+          Left  _    -> case firstTwo of
+            [] -> True
+            _  -> not $ all (`elem` ['0'..'9']) firstTwo
 

@@ -2,7 +2,6 @@
 
 module Util
        ( Arbitrary
-       , leadingDigits
        )
        where
 
@@ -45,11 +44,6 @@ instance Arbitrary AssociationDB where
 
 -- | Helper to ensure generated Association descriptions do not contain newlines
 noNewlines :: String -> Bool
-noNewlines s = not hasNewline
-  where hasNewline = elem '\n' s || elem '\r' s
+noNewlines s = not $ any (`elem` "\r\n") s
 
--- | Helper to ensure the first two characters in a string are in '0'..'9'
-leadingDigits :: String -> Bool
-leadingDigits (s:s':_) = s `elem` ['0'..'9'] && s' `elem` ['0'..'9']
-leadingDigits _        = False
 
