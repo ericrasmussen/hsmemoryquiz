@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
+
 module Util
        ( Arbitrary
        , leadingDigits
@@ -6,12 +8,14 @@ module Util
 
 import Digit
 import Letter
-import Parser
 import Association
 
 import Control.Applicative
 
 import Test.QuickCheck
+
+import qualified Data.Vector as Vector
+
 
 -- -----------------------------------------------------------------------------
 -- * Arbitrary instances for our data types
@@ -31,6 +35,9 @@ instance Arbitrary LetterPair where
 instance Arbitrary Association where
   arbitrary = makeAssociation <$> arbitrary
                               <*> (arbitrary `suchThat` noNewlines)
+
+instance Arbitrary AssociationDB where
+  arbitrary = Vector.fromList <$> listOf1 arbitrary
 
 
 -- -----------------------------------------------------------------------------

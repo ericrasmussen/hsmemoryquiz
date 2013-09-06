@@ -6,20 +6,28 @@ import Test.QuickCheck
 
 import Text.Parsec.Prim
 
+import qualified Data.Vector as V
+
 import Util
+
 import Digit
-import Letter
 import Parser
-import Association
 
 
 spec :: Spec
 spec = do
-  describe "test association parser" $
+  describe "Association parsers" $ do
     it "parses an association" $
-      property $ \x -> case parse parseAssociation "" (show x) of
-        Left  e -> False
-        Right r -> r == x
+      property $ \assoc -> case parse parseAssociation "" (show assoc) of
+        Left  _      -> False
+        Right result -> result == id assoc
+
+    it "parses a vector of associations" $
+      property $ \assocs -> let as = unlines . map show . V.toList $ assocs in
+        case parse parseAssociationDB "" as of
+          Left  _      -> False
+          Right result -> result == assocs
+
 
   describe "test digit pair parser" $
     it "parses a valid digit pair or fails" $
