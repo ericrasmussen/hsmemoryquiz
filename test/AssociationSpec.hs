@@ -4,17 +4,13 @@ module AssociationSpec
 import Test.Hspec
 import Test.QuickCheck
 
-import Util
+import Util()
 import Digit
 import Letter
 import Association
 
 import Data.Char   (toUpper)
 import Data.List   (isInfixOf)
-
-
-
-
 
 
 spec :: Spec
