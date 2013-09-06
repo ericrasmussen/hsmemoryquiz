@@ -34,6 +34,6 @@ spec = do
         case parse parseDigitPair "" s of
           Right pair -> show pair == firstTwo
           Left  _    -> case firstTwo of
-            [] -> True
-            _  -> not $ all (`elem` ['0'..'9']) firstTwo
-
+            -- ensure when we have at least two characters they aren't in 0-9
+            (c:d:_) -> not $ all (`elem` ['0'..'9']) firstTwo
+            _       -> True
