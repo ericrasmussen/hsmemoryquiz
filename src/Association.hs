@@ -22,6 +22,7 @@ module Association
        , makeAssociation
        , Result
        , Response
+       , AnswerChecker
        )
        where
 
@@ -55,6 +56,7 @@ type RenderAssociation = Association -> String
 -- these are quiz-y
 type Result            = Either String String
 type Response          = String
+type AnswerChecker     = Association -> Response -> Result
 
 -- -----------------------------------------------------------------------------
 -- * Functions for working with Associations
