@@ -127,7 +127,7 @@ instance Show Question where
 
 -- | Create a reusable function to generate Questions from Associations
 makeQuestionGen :: RenderAssociation         -- project an association
-                -> AnswerChecker             -- check an answer
+                -> AnswerChecker             -- check answer against association
                 -> (Association -> Question) -- generate a question
 makeQuestionGen toQuestion checkAnswer = \assoc ->
   Question {
