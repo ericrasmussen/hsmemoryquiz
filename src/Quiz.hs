@@ -76,6 +76,9 @@ data Registry = Registry {
   , getIndex     :: Quiz Int
 }
 
+instance Show Registry where
+  show r = concat ["Registry: ", show $ associations r]
+
 -- | Keep track of the score (number of correct answers) and the total questions
 -- asked. Also contains a generator that knows how to create a Question from a
 -- given Association.

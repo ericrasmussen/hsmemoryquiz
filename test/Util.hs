@@ -49,6 +49,14 @@ instance Arbitrary Question where
     let eval = \s -> r
     return $ Question { question = q, evaluator = eval }
 
+instance Arbitrary Registry where
+  arbitrary = do
+    q   <- arbitrary :: Gen Question
+    as  <- arbitrary :: Gen AssociationDB
+    ind <- arbitrary :: Gen (Quiz Int)
+    let gen = \a -> q
+    return $ makeRegistry gen as ind
+
 instance Arbitrary (Quiz Int) where
   arbitrary = elements [indexRand, indexOrdered, indexReversed]
 
