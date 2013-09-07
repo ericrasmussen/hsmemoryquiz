@@ -49,11 +49,12 @@ instance Show Association where
 -- -----------------------------------------------------------------------------
 -- * Type aliases
 
+-- aliases relating to Associations
 type Mnemonic          = String
 type AssociationDB     = Vector Association
 type RenderAssociation = Association -> String
 
--- these are quiz-y
+-- aliases relating to checking answers
 type Result            = Either String String
 type Response          = String
 type AnswerChecker     = Association -> Response -> Result
