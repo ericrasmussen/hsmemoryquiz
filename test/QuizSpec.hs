@@ -8,6 +8,9 @@ import Test.QuickCheck.Monadic
 import Quiz
 import Util()
 
+import Data.Ix (inRange)
+
+import qualified Data.Vector as V
 
 {-
 
@@ -36,14 +39,15 @@ spec = do
         in assocsEq && questionEq && indexEq
 
   describe "Indexing strategies" $
-    it "always stays within bounds" $
+    it "always produces an Int within the Vector's bounds" $
       monadicIO $ do
         reg <- pick arbitrary
         qs  <- pick arbitrary
         res <- run $ runQuizInt reg qs (getIndex reg)
+        let maxInt = V.length $ associations reg
         case res of
-          Nothing -> assert False   -- out of bounds or other error
-          Just n  -> assert $ n >= 0  -- need a better way to test this
+          Nothing -> assert False
+          Just n  -> assert $ inRange (0, maxInt) n
 
 
 -- Convenience function to run a Quiz Int computation and return Maybe Int in IO
