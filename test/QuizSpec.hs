@@ -16,9 +16,7 @@ import qualified Data.Vector as V
 
 exported functions we still need to test:
 
-runQuiz
 playGame
-makeQuestionGen
 
 -}
 
@@ -48,6 +46,12 @@ spec = do
         case res of
           Nothing -> assert False
           Just n  -> assert $ inRange (0, maxInt) n
+
+  describe "makeQuestionGen" $
+    it "can create a reusable question generator" $
+      property $ \ (toQuestion, checkAnswer, assoc) ->
+        let gen = makeQuestionGen toQuestion checkAnswer
+        in  question (gen assoc) == toQuestion assoc
 
 
 -- Convenience function to run a Quiz Int computation and return Maybe Int in IO

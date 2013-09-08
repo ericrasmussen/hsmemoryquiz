@@ -10,6 +10,8 @@ import Digit
 import Letter
 import Association
 
+import Data.Char (ord)
+
 import Control.Applicative
 
 import Test.QuickCheck
@@ -60,9 +62,24 @@ instance Arbitrary Registry where
 instance Arbitrary (Quiz Int) where
   arbitrary = elements [indexRand, indexOrdered, indexReversed]
 
--- required for using Quiz Int as a property
+-- uses the first character of the generated mnemonic as a seed for variant,
+-- or for an empty string uses the char '*' just because
+instance CoArbitrary Association where
+  coarbitrary = variant . ord . safeHead . mnemonic
+    where safeHead []    = '*'
+          safeHead (x:_) = x
+
+-- required Show instances for testing
 instance Show (Quiz Int) where
   show _ = "<quiz int>"
+
+instance Show RenderAssociation where
+  show _ = "<render association>"
+
+
+instance Show AnswerChecker where
+  show _ = "<answer checker>"
+
 
 -- -----------------------------------------------------------------------------
 -- * Helper functions to constrain generated data
