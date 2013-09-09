@@ -29,17 +29,17 @@ module Quiz
        )
        where
 
-import Digit
-import Letter
 import Association
+
+import Data.List (isPrefixOf)
 
 import System.Random
 
 import System.IO (hFlush, stdout)
 
-import Numeric (showFFloat)
+import System.IO.Error (tryIOError)
 
-import Control.Applicative
+import Numeric (showFFloat)
 
 import Control.Monad.Error
 import Control.Monad.Reader
@@ -157,9 +157,9 @@ playRound assoc = do
   env <- ask
   let question = genQuestion env $ assoc
   liftIO $ prompt question
-  answer <- liftIO getLine
+  answer <- guardedGetLine
   -- TODO: really shouldn't use errors for a normal condition here
-  when (answer == "quit") $ throwError ("See you later! Score: " ++ show st)
+  when (":q" `isPrefixOf` answer) $ throwError ("See you later! Score: " ++ show st)
   res <- communicateResult question answer
   put $ scoreResponse res st
 
@@ -223,3 +223,9 @@ prompt q = putStr (questionPrompt q) >> hFlush stdout
 -- | Display a question in a prompt format
 questionPrompt :: Question -> String
 questionPrompt Question { question=q } = "> " ++ q ++ ": "
+
+-- | Prompt for a line and exit on exception
+guardedGetLine :: Quiz String
+guardedGetLine = do
+  res <- liftIO $ tryIOError getLine
+  either (throwError . show) (return) res

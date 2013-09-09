@@ -1,20 +1,6 @@
-{-# LANGUAGE FlexibleContexts #-}
-
-import Prelude hiding (catch)
-
 import Quiz
-import Digit
 import Config
-import Parser
-import Association
 
-
-import Data.Vector (Vector, (!))
-import qualified Data.Vector as Vector
-
-
-import Control.Monad.Error
-import Control.Monad.State
 
 
 -- | A convenient but hacky way to run our game. Currently the Right case is
@@ -27,7 +13,13 @@ runGame registry = do
   let state = newQuizState
   res <- runQuiz registry state playGame
   case res of
-    (Left  e, _) -> putStrLn e
+    -- temporary hack. could check e with System.IO.Error.isEOFError and print
+    -- nicer error message
+    (Left  e, q) -> putStrLn $ concat ["Caught exc: "
+                                      , e
+                                      , "\nFinal score: "
+                                      , show q
+                                      ]
     (Right _, q) -> putStrLn $ "Final score: " ++ show q
 
 -- | Parses command line args, attempts to build a QuizState, and either runs
