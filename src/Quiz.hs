@@ -208,11 +208,17 @@ formatFraction :: Int -> Int -> String
 formatFraction x y = show x ++ "/" ++ show y
 
 -- | Divides two Integers as doubles and formats the result as a percentage in
--- the form "x.yz%"
+-- the form "x.yz%". Although you can't divide by 0, we handle the x / 0 case by
+-- displaying "0%".
 formatPercentage :: Int -> Int -> String
-formatPercentage x y = showFFloat (Just 2) percentage "%"
-  where percentage =
-          if y == 0 then 0 else 100.0 * (fromIntegral x / fromIntegral y)
+formatPercentage x 0 = "0%"
+formatPercentage x y = showFFloat (Just decimals) percentage "%"
+  where percentage = 100.0 * (fromIntegral x / fromIntegral y)
+        decimals   = if isWhole percentage then 0 else 2
+
+-- | Helper to check if a percentage (fractional) is a whole number
+isWhole :: RealFrac a => a -> Bool
+isWhole x = floor x == ceiling x
 
 -- | Display a question in a prompt format
 questionPrompt :: Question -> String
