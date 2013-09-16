@@ -101,10 +101,8 @@ instance MonadState s m => MonadState s (H.InputT m) where
   put = lift . put
 
 instance MonadReader r m => MonadReader r (H.InputT m) where
-  ask   = lift ask
-  -- obvious TODO: define a proper local instance even if we don't use it
-  local = undefined
-
+  ask       = lift ask
+  local f m = H.mapInputT (local f) m
 
 -- -----------------------------------------------------------------------------
 -- * Working with InputT
