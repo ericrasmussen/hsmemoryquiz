@@ -18,10 +18,8 @@ module Parser
        )
        where
 
-import Quiz
 
 import Digit
-
 import Association
 
 import Control.Monad (void)

@@ -29,21 +29,18 @@ module Quiz
        )
        where
 
+import Instances
 import Association
 
 import Data.List (isPrefixOf)
 
 import System.Random
 
-import System.IO (hFlush, stdout)
-
-import System.IO.Error (tryIOError)
-
 import Numeric (showFFloat)
 
 import Control.Monad.Error
 import Control.Monad.Reader
-import Control.Monad.State
+import Control.Monad.State.Strict
 
 import Data.Vector ((!?))
 import qualified Data.Vector as V
@@ -54,9 +51,11 @@ import qualified Data.Vector as V
 
 -- | The exported Quiz type that wraps our ErrorT, StateT, and IO stack
 newtype Quiz a = Quiz {
-  getQuiz :: ErrorT String (ReaderT Registry (StateT QuizState IO)) a
+  getQuiz :: ErrorT String (InputT (ReaderT Registry (StateT QuizState IO))) a
   } deriving ( Monad
              , MonadIO
+             , MonadException
+             , MonadHaskeline
              , MonadError String
              , MonadState QuizState
              , MonadReader Registry
@@ -66,8 +65,10 @@ newtype Quiz a = Quiz {
 runQuiz :: Registry -> QuizState -> Quiz a -> IO (Either String a, QuizState)
 runQuiz registry scoreBoard k = do
   let err = runErrorT $ getQuiz k
-  let env = runReaderT err registry
+  let inp = runInputTwithDefaults err
+  let env = runReaderT inp registry
   runStateT env scoreBoard
+
 
 -- | Read-only registry for application settings
 data Registry = Registry {
@@ -156,8 +157,7 @@ playRound assoc = do
   st  <- get
   env <- ask
   let question = genQuestion env $ assoc
-  liftIO $ prompt question
-  answer <- guardedGetLine
+  answer <- prompt question
   -- TODO: really shouldn't use errors for a normal condition here
   when (":q" `isPrefixOf` answer) $ throwError ("See you later! Score: " ++ show st)
   res <- communicateResult question answer
@@ -167,9 +167,7 @@ playRound assoc = do
 -- | Communicates the result to the user and returns an int
 communicateResult :: Question -> Response -> Quiz Bool
 communicateResult q a = either (printWith False) (printWith True) (checkResponse q a)
-  where printWith b s = do
-          liftIO $ putStrLn s
-          return b
+  where printWith b s = outputStrLn s >> return b
 
 -- | The total questions asked is incremented by one for each answered question,
 -- and the score will be incremented by 1 if the answer was correct.
@@ -216,16 +214,19 @@ formatPercentage x y = showFFloat (Just 2) percentage "%"
   where percentage =
           if y == 0 then 0 else 100.0 * (fromIntegral x / fromIntegral y)
 
--- | Basic question prompt
-prompt :: Question -> IO ()
-prompt q = putStr (questionPrompt q) >> hFlush stdout
-
 -- | Display a question in a prompt format
 questionPrompt :: Question -> String
 questionPrompt Question { question=q } = "> " ++ q ++ ": "
 
--- | Prompt for a line and exit on exception
-guardedGetLine :: Quiz String
-guardedGetLine = do
-  res <- liftIO $ tryIOError getLine
-  either (throwError . show) (return) res
+-- | Prompt for a line and exit on exception.
+-- Note that Interrupt exceptions (ctrl-c) must be handled separately with
+-- handleInterrupt, but we also need to check the result of getInputLine for the
+-- Nothing case, which indicates an EOF exception.
+prompt :: Question -> Quiz String
+prompt q = handleInterrupt (throwError "interrupt") $ do
+  res <- getInputLine (questionPrompt q)
+  case res of
+    Nothing -> throwError "EOF"
+    Just s  -> return s
+
+

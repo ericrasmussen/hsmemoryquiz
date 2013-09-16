@@ -12,10 +12,11 @@ runGame :: Registry -> IO ()
 runGame registry = do
   let state = newQuizState
   res <- runQuiz registry state playGame
+--  res <- runQuiz registry state (handleInterrupt (throwError "ctrl-c was pressed") playGame)
   case res of
     -- temporary hack. could check e with System.IO.Error.isEOFError and print
     -- nicer error message
-    (Left  e, q) -> putStrLn $ concat ["Caught exc: "
+    (Left  e, q) -> putStrLn $ concat ["Caught: "
                                       , e
                                       , "\nFinal score: "
                                       , show q

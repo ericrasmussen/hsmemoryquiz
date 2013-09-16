@@ -32,8 +32,6 @@ import System.Console.CmdArgs
 
 import Control.Applicative
 
-import Control.Monad.Error      (throwError, liftIO, MonadError, MonadIO)
-
 import System.IO.Error          (tryIOError)
 
 
