@@ -17,6 +17,7 @@ module Quiz
        ( Quiz
        , runQuiz
        , playGame
+       , runGame
        , QuizState (..)
        , newQuizState
        , Registry (..)
@@ -136,32 +137,56 @@ makeQuestionGen toQuestion checkAnswer = \assoc ->
     , evaluator = checkAnswer assoc
     }
 
-
 -- | Helper to test a given Response against a Question's check answer predicate
 checkResponse :: Question -> Response -> Result
 checkResponse (Question {evaluator=eval}) response = eval response
 
--- | Run a continuous game in our Quiz monad
-playGame :: Quiz ()
-playGame = do
+data Game = Continue | Stop
+
+
+
+-- | Get the next Association using getIndex from the Registry, guarding
+-- against poor implementations of getIndex.
+nextAssociation :: Quiz Association
+nextAssociation = do
   env <- ask
   ind <- getIndex env
   let maybeAssoc = (associations env) !? ind
   case maybeAssoc of
-    Just r  -> playRound r >> playGame
+    Just r  -> return r
     Nothing -> throwError "Programmer error: out of bounds access attempt"
 
+-- | Run a continuous game in our Quiz monad
+playGame :: Quiz ()
+playGame = do
+  assoc <- nextAssociation
+  res   <- playRound assoc
+  case res of
+    Continue -> playGame
+    Stop     -> return ()
+
+
 -- | Run a single round in our Quiz monad
-playRound :: Association -> Quiz ()
+playRound :: Association -> Quiz Game
 playRound assoc = do
   st  <- get
   env <- ask
   let question = genQuestion env $ assoc
   answer <- prompt question
-  -- TODO: really shouldn't use errors for a normal condition here
-  when (":q" `isPrefixOf` answer) $ throwError ("See you later! Score: " ++ show st)
-  res <- communicateResult question answer
-  put $ scoreResponse res st
+  if ":q" `isPrefixOf` answer
+    then return Stop
+    else do
+      res <- communicateResult question answer
+      put $ scoreResponse res st
+      return Continue
+
+-- | A convenient way to run our game.
+runGame :: Registry -> IO ()
+runGame registry = do
+  res <- runQuiz registry newQuizState playGame
+  case res of
+    (Left  e, q) -> putStrLn $ "Caught: " ++ e ++ "\nFinal score: " ++ show q
+    (Right _, q) -> putStrLn $ "Final score: " ++ show q
 
 
 -- | Communicates the result to the user and returns an int
