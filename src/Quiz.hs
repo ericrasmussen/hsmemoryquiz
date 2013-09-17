@@ -17,6 +17,7 @@ module Quiz
        ( Quiz
        , runQuiz
        , playGame
+       , runGame
        , QuizState (..)
        , newQuizState
        , Registry (..)
@@ -29,21 +30,18 @@ module Quiz
        )
        where
 
-import Digit
-import Letter
+import Instances
 import Association
+
+import Data.List (isPrefixOf)
 
 import System.Random
 
-import System.IO (hFlush, stdout)
-
 import Numeric (showFFloat)
-
-import Control.Applicative
 
 import Control.Monad.Error
 import Control.Monad.Reader
-import Control.Monad.State
+import Control.Monad.State.Strict
 
 import Data.Vector ((!?))
 import qualified Data.Vector as V
@@ -54,9 +52,11 @@ import qualified Data.Vector as V
 
 -- | The exported Quiz type that wraps our ErrorT, StateT, and IO stack
 newtype Quiz a = Quiz {
-  getQuiz :: ErrorT String (ReaderT Registry (StateT QuizState IO)) a
+  getQuiz :: ErrorT String (InputT (ReaderT Registry (StateT QuizState IO))) a
   } deriving ( Monad
              , MonadIO
+             , MonadException
+             , MonadHaskeline
              , MonadError String
              , MonadState QuizState
              , MonadReader Registry
@@ -66,8 +66,10 @@ newtype Quiz a = Quiz {
 runQuiz :: Registry -> QuizState -> Quiz a -> IO (Either String a, QuizState)
 runQuiz registry scoreBoard k = do
   let err = runErrorT $ getQuiz k
-  let env = runReaderT err registry
+  let inp = runInputTwithDefaults err
+  let env = runReaderT inp registry
   runStateT env scoreBoard
+
 
 -- | Read-only registry for application settings
 data Registry = Registry {
@@ -135,41 +137,62 @@ makeQuestionGen toQuestion checkAnswer = \assoc ->
     , evaluator = checkAnswer assoc
     }
 
-
 -- | Helper to test a given Response against a Question's check answer predicate
 checkResponse :: Question -> Response -> Result
 checkResponse (Question {evaluator=eval}) response = eval response
 
--- | Run a continuous game in our Quiz monad
-playGame :: Quiz ()
-playGame = do
+data Game = Continue | Stop
+
+
+
+-- | Get the next Association using getIndex from the Registry, guarding
+-- against poor implementations of getIndex.
+nextAssociation :: Quiz Association
+nextAssociation = do
   env <- ask
   ind <- getIndex env
   let maybeAssoc = (associations env) !? ind
   case maybeAssoc of
-    Just r  -> playRound r >> playGame
+    Just r  -> return r
     Nothing -> throwError "Programmer error: out of bounds access attempt"
 
+-- | Run a continuous game in our Quiz monad
+playGame :: Quiz ()
+playGame = do
+  assoc <- nextAssociation
+  res   <- playRound assoc
+  case res of
+    Continue -> playGame
+    Stop     -> return ()
+
+
 -- | Run a single round in our Quiz monad
-playRound :: Association -> Quiz ()
+playRound :: Association -> Quiz Game
 playRound assoc = do
   st  <- get
   env <- ask
   let question = genQuestion env $ assoc
-  liftIO $ prompt question
-  answer <- liftIO getLine
-  -- TODO: really shouldn't use errors for a normal condition here
-  when (answer == "quit") $ throwError ("See you later! Score: " ++ show st)
-  res <- communicateResult question answer
-  put $ scoreResponse res st
+  answer <- prompt question
+  if ":q" `isPrefixOf` answer
+    then return Stop
+    else do
+      res <- communicateResult question answer
+      put $ scoreResponse res st
+      return Continue
+
+-- | A convenient way to run our game.
+runGame :: Registry -> IO ()
+runGame registry = do
+  res <- runQuiz registry newQuizState playGame
+  case res of
+    (Left  e, q) -> putStrLn $ "Caught: " ++ e ++ "\nFinal score: " ++ show q
+    (Right _, q) -> putStrLn $ "Final score: " ++ show q
 
 
 -- | Communicates the result to the user and returns an int
 communicateResult :: Question -> Response -> Quiz Bool
 communicateResult q a = either (printWith False) (printWith True) (checkResponse q a)
-  where printWith b s = do
-          liftIO $ putStrLn s
-          return b
+  where printWith b s = outputStrLn s >> return b
 
 -- | The total questions asked is incremented by one for each answered question,
 -- and the score will be incremented by 1 if the answer was correct.
@@ -210,16 +233,31 @@ formatFraction :: Int -> Int -> String
 formatFraction x y = show x ++ "/" ++ show y
 
 -- | Divides two Integers as doubles and formats the result as a percentage in
--- the form "x.yz%"
+-- the form "x.yz%". Although you can't divide by 0, we handle the x / 0 case by
+-- displaying "0%".
 formatPercentage :: Int -> Int -> String
-formatPercentage x y = showFFloat (Just 2) percentage "%"
-  where percentage =
-          if y == 0 then 0 else 100.0 * (fromIntegral x / fromIntegral y)
+formatPercentage x 0 = "0%"
+formatPercentage x y = showFFloat (Just decimals) percentage "%"
+  where percentage = 100.0 * (fromIntegral x / fromIntegral y)
+        decimals   = if isWhole percentage then 0 else 2
 
--- | Basic question prompt
-prompt :: Question -> IO ()
-prompt q = putStr (questionPrompt q) >> hFlush stdout
+-- | Helper to check if a percentage (fractional) is a whole number
+isWhole :: RealFrac a => a -> Bool
+isWhole x = floor x == ceiling x
 
 -- | Display a question in a prompt format
 questionPrompt :: Question -> String
 questionPrompt Question { question=q } = "> " ++ q ++ ": "
+
+-- | Prompt for a line and exit on exception.
+-- Note that Interrupt exceptions (ctrl-c) must be handled separately with
+-- handleInterrupt, but we also need to check the result of getInputLine for the
+-- Nothing case, which indicates an EOF exception.
+prompt :: Question -> Quiz String
+prompt q = handleInterrupt (throwError "interrupt") $ do
+  res <- getInputLine (questionPrompt q)
+  case res of
+    Nothing -> throwError "EOF"
+    Just s  -> return s
+
+

@@ -85,8 +85,7 @@ instance Projection LetterPair where
 
 instance Projection Mnemonic where
   view (Association _ m) = m
-  -- TODO: use a better test here ("" `isInfixOf` "foo" == True)
-  checkAnswer m          = toResult ((`isInfixOf` upper m) . upper) m
+  checkAnswer m          = toResult (closeEnough m) m
 
 
 -- | Checks a response against a predicate and converts it to a Result
@@ -102,4 +101,9 @@ toResult p a s = if p s
 upper :: String -> String
 upper = map toUpper
 
-
+-- | Check if a supplied answer is "close enough" to the real answer. In this
+-- case, that means the user's input is at least three characters and is an
+-- infix of the real answer
+closeEnough :: String -> String -> Bool
+closeEnough a s | length s > 2 = upper s `isInfixOf` upper a
+                | otherwise    = False
