@@ -23,6 +23,7 @@ module Quiz
        , Question  (..)
        , makeQuestionGen
        , checkResponse
+       , scoreResponse
        )
        where
 
@@ -121,17 +122,21 @@ instance Show Question where
 makeQuestionGen :: RenderAssociation         -- project an association
                 -> AnswerChecker             -- check answer against association
                 -> (Association -> Question) -- generate a question
-makeQuestionGen toQuestion checkAnswer = \assoc ->
-  Question {
-      question  = toQuestion  assoc
-    , evaluator = checkAnswer assoc
-    }
+makeQuestionGen toQuestion checkAnswer assoc = Question {
+    question  = toQuestion  assoc
+  , evaluator = checkAnswer assoc
+  }
 
 -- | Helper to test a given Response against a Question's check answer predicate
 checkResponse :: Question -> Response -> Result
 checkResponse (Question {evaluator=eval}) response = eval response
 
-
+-- | The total questions asked is incremented by one for each answered question,
+-- and the score will be incremented by 1 if the answer was correct.
+scoreResponse :: Bool -> QuizState -> QuizState
+scoreResponse correct st@(QuizState { score=s, total=t }) =
+  st { score=s+modifier, total=t+1 }
+    where modifier = if correct then 1 else 0
 
 
 -- -----------------------------------------------------------------------------

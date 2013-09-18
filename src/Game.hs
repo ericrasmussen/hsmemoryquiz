@@ -62,34 +62,32 @@ playGame = do
     Continue -> playGame
     Stop     -> return ()
 
-
 -- | Play a single round in our Quiz monad
 playRound :: Association -> Quiz Game
 playRound assoc = do
-  st  <- get
   env <- ask
   let question = genQuestion env $ assoc
   answer <- prompt question
+  let result = checkResponse question answer
   if ":q" `isPrefixOf` answer
     then return Stop
-    else do
-      res <- communicateResult question answer
-      put $ scoreResponse res st
-      return Continue
+    else updateResult result >> return Continue
 
+-- | After the user answers a question, we use updateResult to print the result
+-- and update the score.
+updateResult :: Result -> Quiz ()
+updateResult res = do
+  st <- get
+  let (wasCorrect, msg) = elimResult res
+  put $ scoreResponse wasCorrect st
+  outputStrLn msg
 
-
--- | Communicates the result to the user and returns an int
-communicateResult :: Question -> Response -> Quiz Bool
-communicateResult q a = either (printWith False) (printWith True) (checkResponse q a)
-  where printWith b s = outputStrLn s >> return b
-
--- | The total questions asked is incremented by one for each answered question,
--- and the score will be incremented by 1 if the answer was correct.
-scoreResponse :: Bool -> QuizState -> QuizState
-scoreResponse correct st@(QuizState { score=s, total=t }) =
-  st { score=s+modifier, total=t+1 }
-    where modifier = if correct then 1 else 0
+-- | Check the result to determine whether the user was correct (Right) or
+-- incorrect (Left), and return it with the result message that will be
+-- displayed to the user.
+elimResult :: Result -> (Bool, String)
+elimResult = either (makeTuple False) (makeTuple True)
+  where makeTuple x y = (x, y)
 
 
 -- -----------------------------------------------------------------------------
