@@ -87,7 +87,7 @@ updateResult res = do
 -- displayed to the user.
 elimResult :: Result -> (Bool, String)
 elimResult = either (makeTuple False) (makeTuple True)
-  where makeTuple x y = (x, y)
+  where makeTuple = (,)
 
 
 -- -----------------------------------------------------------------------------
