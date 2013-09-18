@@ -60,6 +60,7 @@ spec = do
 
     it "can verify the mnemonic projection matches the original" $
       property $ \a -> case checkAnswer (view a :: Mnemonic) (mnemonic a) of
-        Left  _ -> False
+        -- only strings <= length 2 should ever fail
+        Left  _ -> length (mnemonic a) <= 2
         Right _ -> True
 
