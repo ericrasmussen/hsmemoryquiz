@@ -6,6 +6,7 @@ module Util
        where
 
 import Quiz
+import Game
 import Digit
 import Letter
 import Association

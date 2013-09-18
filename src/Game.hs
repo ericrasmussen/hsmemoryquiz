@@ -1,0 +1,162 @@
+-- |
+-- Module      : Game
+-- Copyright   : (c) 2013 Eric Rasmussen
+--
+-- License     : BSD-style
+-- Maintainer  : eric@chromaticleaves.com
+-- Stability   : experimental
+-- Portability : GHC
+--
+-- Newtype wrapper for our quiz stack, along with the QuizState that keeps score
+-- throughout the game.
+
+
+module Game
+       ( runGame
+       , indexRand
+       , indexOrdered
+       , indexReversed
+       ) where
+
+
+import Quiz
+import Instances
+import Association
+
+import System.Random
+
+import Data.List (isPrefixOf)
+
+import Data.Vector ((!?))
+import qualified Data.Vector as V
+
+import Control.Monad.Error
+import Control.Monad.Reader
+import Control.Monad.State.Strict
+
+
+
+-- -----------------------------------------------------------------------------
+-- * Game basics
+
+-- | A data type for distinguishing ongoing and stopped games
+data Game = Continue | Stop
+
+
+-- | Launches into a game until the user quits or an exception occurs, and
+-- prints the results
+runGame :: Registry -> IO ()
+runGame registry = do
+  res <- runQuiz registry newQuizState playGame
+  case res of
+    (Left  e, q) -> putStrLn $ formatError e q
+    (Right _, q) -> putStrLn $ formatSuccess q
+
+
+-- | Run a continuous game in our Quiz monad
+playGame :: Quiz ()
+playGame = do
+  assoc <- nextAssociation
+  res   <- playRound assoc
+  case res of
+    Continue -> playGame
+    Stop     -> return ()
+
+
+-- | Play a single round in our Quiz monad
+playRound :: Association -> Quiz Game
+playRound assoc = do
+  st  <- get
+  env <- ask
+  let question = genQuestion env $ assoc
+  answer <- prompt question
+  if ":q" `isPrefixOf` answer
+    then return Stop
+    else do
+      res <- communicateResult question answer
+      put $ scoreResponse res st
+      return Continue
+
+
+
+-- | Communicates the result to the user and returns an int
+communicateResult :: Question -> Response -> Quiz Bool
+communicateResult q a = either (printWith False) (printWith True) (checkResponse q a)
+  where printWith b s = outputStrLn s >> return b
+
+-- | The total questions asked is incremented by one for each answered question,
+-- and the score will be incremented by 1 if the answer was correct.
+scoreResponse :: Bool -> QuizState -> QuizState
+scoreResponse correct st@(QuizState { score=s, total=t }) =
+  st { score=s+modifier, total=t+1 }
+    where modifier = if correct then 1 else 0
+
+
+-- -----------------------------------------------------------------------------
+-- * Strategies for choosing Associations
+
+-- | Get the next Association using getIndex from the Registry, guarding
+-- against poor implementations of getIndex.
+nextAssociation :: Quiz Association
+nextAssociation = do
+  env <- ask
+  ind <- getIndex env
+  let maybeAssoc = (associations env) !? ind
+  case maybeAssoc of
+    Just r  -> return r
+    Nothing -> throwError "Programmer error: out of bounds access attempt"
+
+
+-- | Always choose a random Association
+indexRand :: Quiz Int
+indexRand = do
+  env <- ask
+  let maxInt = V.length (associations env) - 1
+  liftIO $ getStdRandom $ randomR (0, maxInt)
+
+-- | Gets the next Association in order (resets to 0 after reaching the max)
+indexOrdered :: Quiz Int
+indexOrdered = do
+  st  <- get
+  env <- ask
+  let len = V.length (associations env)
+  return $ total st `mod` len
+
+-- | Gets the next Association in reverse (resets to the max after reaching 0)
+indexReversed :: Quiz Int
+indexReversed = do
+  st  <- get
+  env <- ask
+  let len = V.length (associations env)
+  let asked = total st `mod` len
+  return $ (len - 1) - asked
+
+
+-- -----------------------------------------------------------------------------
+-- * Helper functions private to this module
+
+-- | Display the final score after a successful game run
+formatSuccess :: QuizState -> String
+formatSuccess q = "Final score: " ++ show q
+
+-- | If an error was caught during a game run, display the error and the final
+-- score
+formatError :: String -> QuizState -> String
+formatError e q =  "Caught: " ++ e ++ "\nFinal score: " ++ show q
+
+-- | Display a question in a prompt format
+questionPrompt :: Question -> String
+questionPrompt Question { question=q } = "> " ++ q ++ ": "
+
+-- | Prompt for a line and exit on exception.
+-- Note that Interrupt exceptions (ctrl-c) must be handled separately with
+-- handleInterrupt, but we also need to check the result of getInputLine for the
+-- Nothing case, which indicates an EOF exception.
+prompt :: Question -> Quiz String
+prompt q = handleInterrupt (throwError "interrupt") $ do
+  res <- getInputLine (questionPrompt q)
+  case res of
+    Nothing -> throwError "EOF"
+    Just s  -> return s
+
+
