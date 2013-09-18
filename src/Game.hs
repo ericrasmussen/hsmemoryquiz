@@ -7,8 +7,8 @@
 -- Stability   : experimental
 -- Portability : GHC
 --
--- Newtype wrapper for our quiz stack, along with the QuizState that keeps score
--- throughout the game.
+-- Functions for running a game, playing game rounds, and interacting with the
+-- user.
 
 
 module Game
