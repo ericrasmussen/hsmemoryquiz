@@ -99,7 +99,7 @@ nextAssociation :: Quiz Association
 nextAssociation = do
   env <- ask
   ind <- getIndex env
-  let maybeAssoc = (associations env) !? ind
+  let maybeAssoc = associations env !? ind
   case maybeAssoc of
     Just r  -> return r
     Nothing -> throwError "Programmer error: out of bounds access attempt"
@@ -108,26 +108,23 @@ nextAssociation = do
 -- | Always choose a random Association
 indexRand :: Quiz Int
 indexRand = do
-  env <- ask
-  let maxInt = V.length (associations env) - 1
+  len <- asks $ V.length . associations
+  let maxInt = len - 1
   liftIO $ getStdRandom $ randomR (0, maxInt)
 
 -- | Gets the next Association in order (resets to 0 after reaching the max)
 indexOrdered :: Quiz Int
 indexOrdered = do
   st  <- get
-  env <- ask
-  let len = V.length (associations env)
+  len <- asks $ V.length . associations
   return $ total st `mod` len
 
 -- | Gets the next Association in reverse (resets to the max after reaching 0)
 indexReversed :: Quiz Int
 indexReversed = do
-  st  <- get
-  env <- ask
-  let len = V.length (associations env)
-  let asked = total st `mod` len
-  return $ (len - 1) - asked
+  len <- asks $ V.length . associations
+  ordered <- indexOrdered
+  return $ (len - 1) - ordered
 
 
 -- -----------------------------------------------------------------------------

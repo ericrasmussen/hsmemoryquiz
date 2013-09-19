@@ -70,7 +70,7 @@ data Registry = Registry {
 }
 
 instance Show Registry where
-  show r = concat ["Registry: ", show $ associations r]
+  show r = "Registry: " ++ show (associations r)
 
 -- | Keep track of the score (number of correct answers) and the total questions
 -- asked. Also contains a generator that knows how to create a Question from a
@@ -129,7 +129,7 @@ makeQuestionGen toQuestion checkAnswer assoc = Question {
 
 -- | Helper to test a given Response against a Question's check answer predicate
 checkResponse :: Question -> Response -> Result
-checkResponse (Question {evaluator=eval}) response = eval response
+checkResponse (Question {evaluator=eval}) = eval
 
 -- | The total questions asked is incremented by one for each answered question,
 -- and the score will be incremented by 1 if the answer was correct.
