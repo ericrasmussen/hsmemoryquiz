@@ -37,7 +37,7 @@ import System.IO.Error          (tryIOError)
 
 
 -- -----------------------------------------------------------------------------
--- * The CmdArgs based processor
+-- * Data and functions used by CmdArgs for command-line flag handling
 
 -- | Records to represent command line args
 data Config = Config {
@@ -65,9 +65,6 @@ config = helpArgs
 
 -- -----------------------------------------------------------------------------
 -- * Attempt to build a QuizState from command line args
-
--- maybe TODO: move most of this to ErrorT with Identity or IO to cut down on
--- some of the boilerplate
 
 -- | Takes a config object (built from command line flags) and will either
 -- return a QuizState or a String error
@@ -123,11 +120,6 @@ questionGenerator from to = makeQuestionGen
                             <*> eitherAnswer to
 
 
--- | Helper function to lowercase a String
-lower :: String -> String
-lower = map toLower
-
-
 -- -----------------------------------------------------------------------------
 -- * Dealing with exceptions
 
@@ -147,7 +139,14 @@ readFileSafe fp = do
 leftToString :: Show a => Either a b -> Either String b
 leftToString = either (Left . show) (Right . id)
 
+
+-- -----------------------------------------------------------------------------
+-- * Helpers
+
+-- | Helper function to lowercase a String
+lower :: String -> String
+lower = map toLower
+
 -- | Formats a standard error message for an unrecognized command line arg
 invalidCommand :: String -> String
 invalidCommand s = "Option \"" ++ s ++ "\" not recognized"
-

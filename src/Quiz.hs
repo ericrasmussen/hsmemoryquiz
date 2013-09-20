@@ -62,6 +62,37 @@ runQuiz registry scoreBoard k = do
   runStateT env scoreBoard
 
 
+-- -----------------------------------------------------------------------------
+-- * The quiz state to be used in our Quiz's MonadState instance
+
+-- | Keep track of the score (correct answers) and total (questions asked)
+data QuizState = QuizState {
+    score :: Int
+  , total :: Int
+  }
+
+-- | Make our QuizState pretty for console output. The resulting string will be
+-- in the form: score/total (percentage)
+instance Show QuizState where
+  show QuizState {score=s, total=t} = fraction ++ " (" ++ percentage ++ ")"
+    where fraction   = formatFraction   s t
+          percentage = formatPercentage s t
+
+-- | Creates a fresh QuizState starting at 0/0 questions answered
+newQuizState :: QuizState
+newQuizState = QuizState { score = 0, total = 0 }
+
+-- | The total questions asked is incremented by one for each answered question,
+-- and the score will be incremented by 1 if the answer was correct.
+scoreResponse :: Bool -> QuizState -> QuizState
+scoreResponse correct st@(QuizState { score=s, total=t }) =
+  st { score=s+modifier, total=t+1 }
+    where modifier = if correct then 1 else 0
+
+
+-- -----------------------------------------------------------------------------
+-- * The environment to be used in our Quiz's MonadReader instance
+
 -- | Read-only registry for application settings
 data Registry = Registry {
     genQuestion  :: Association -> Question
@@ -71,26 +102,6 @@ data Registry = Registry {
 
 instance Show Registry where
   show r = "Registry: " ++ show (associations r)
-
--- | Keep track of the score (number of correct answers) and the total questions
--- asked. Also contains a generator that knows how to create a Question from a
--- given Association.
-data QuizState = QuizState {
-    score :: Int
-  , total :: Int
-  }
-
-
--- | Make our QuizState pretty for console output
--- The resulting string will be in the form: score/total (percentage)
-instance Show QuizState where
-  show QuizState {score=s, total=t} = fraction ++ " (" ++ percentage ++ ")"
-    where fraction   = formatFraction   s t
-          percentage = formatPercentage s t
-
--- | Creates a fresh QuizState starting at 0/0 questions answered
-newQuizState :: QuizState
-newQuizState = QuizState { score = 0, total = 0 }
 
 -- | Constructs a Registry
 makeRegistry :: (Association -> Question)
@@ -105,7 +116,6 @@ makeRegistry gen assocs ind = Registry {
 
 -- -----------------------------------------------------------------------------
 -- * Questions!
-
 
 -- | Our primary question type with a showable question and a predicate to check
 -- an answer
@@ -131,13 +141,6 @@ makeQuestionGen toQuestion checkAnswer assoc = Question {
 checkResponse :: Question -> Response -> Result
 checkResponse (Question {evaluator=eval}) = eval
 
--- | The total questions asked is incremented by one for each answered question,
--- and the score will be incremented by 1 if the answer was correct.
-scoreResponse :: Bool -> QuizState -> QuizState
-scoreResponse correct st@(QuizState { score=s, total=t }) =
-  st { score=s+modifier, total=t+1 }
-    where modifier = if correct then 1 else 0
-
 
 -- -----------------------------------------------------------------------------
 -- * Helper functions private to this module
@@ -158,4 +161,3 @@ formatPercentage x y = showFFloat (Just decimals) percentage "%"
 -- | Helper to check if a percentage (fractional) is a whole number
 isWhole :: RealFrac a => a -> Bool
 isWhole x = floor x == ceiling x
-
