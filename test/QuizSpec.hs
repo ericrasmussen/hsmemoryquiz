@@ -12,14 +12,6 @@ import Data.Ix (inRange)
 
 import qualified Data.Vector as V
 
-{-
-
-exported functions we still need to test:
-
-scoreResponse
-checkQuestion
-
--}
 
 spec :: Spec
 spec = do
@@ -29,9 +21,9 @@ spec = do
       total newQuizState `shouldBe` 0
 
     it "can be modified when scoring a response" $
-      property $ \x y b -> let st  = scoreResponse b (QuizState x y)
-                               mod = if b then 1 else 0
-                           in x + mod == score st && y + 1 == total st
+      property $ \ x y b -> let st  = scoreResponse b (QuizState x y)
+                                mod = if b then 1 else 0
+                            in x + mod == score st && y + 1 == total st
 
   describe "Registry" $
     it "can be created with makeRegistry" $
@@ -53,12 +45,14 @@ spec = do
           Nothing -> assert False
           Just n  -> assert $ inRange (0, maxInt) n
 
-  describe "makeQuestionGen" $
-    it "can create a reusable question generator" $
+  describe "Questions" $ do
+    it "makeQuestionGen creates a question generator" $
       property $ \ (toQuestion, checkAnswer, assoc) ->
         let gen = makeQuestionGen toQuestion checkAnswer
         in  question (gen assoc) == toQuestion assoc
 
+    it "checkResponse uses a question's evaluator" $
+      property $ \ q r -> checkResponse q r == evaluator q r
 
 -- Convenience function to run a Quiz Int computation and return Maybe Int in IO
 runQuizInt :: Registry -> QuizState -> Quiz Int -> IO (Maybe Int)
