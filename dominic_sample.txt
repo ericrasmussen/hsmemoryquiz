@@ -1,0 +1,100 @@
+00:
+01:
+02:
+03:
+04: Ole-Johan Dahl
+05: Oren Etzioni
+06: Olaf Storaasli
+07: Oded Goldreich
+08:
+09:
+10:
+11: Alfred Aho
+12: Anthony James Barr
+13: Alonzo Church
+14: Andries van Dam
+15: Annie J. Easley
+16: Adi Shamir
+17: Adele Goldberg
+18: Andrew Herbert
+19: Allen Newell
+20:
+21: Bruce Arden
+22: Barry Boehm
+23: Bryan Cantrill
+24:
+25:
+26: Bruce Schneier
+27: Bernard Galler
+28:
+29: Bernard de Neumann
+30:
+31:
+32: Charles Babbage
+33:
+34: Christopher J. Date
+35: Christopher Riche Evans
+36: Claude Sammut
+37: Charles Geschke
+38: C. A. R. Hoare
+39:
+40:
+41: David P. Anderson
+42: David A. Bader
+43:
+44: Dorothy E. Denning
+45: Douglas Engelbart
+46: Dana Scott
+47: David Gelernter
+48: Danny Hillis
+49: Donald Norman
+50:
+51:
+52:
+53: Edwin Catmull
+54: Erik Demaine
+55: E. Allen Emerson
+56: Edward H. Shortliffe
+57:
+58: Eldon C. Hall
+59: Emmy Noether
+60: Steve Omohundro
+61: Serge Abiteboul
+62: Steven M. Bellovin
+63: Simon Colton
+64: Susan Dumais
+65: Shimon Even
+66: Scott Shenker
+67: Seymour Ginsburg
+68:
+69:
+70:
+71: Gene Amdahl
+72: Gordon Bell
+73: Gregory Chaitin
+74:
+75:
+76: George Sadowsky
+77: Gene Golub
+78: Grace Hopper
+79: G.M. Nijssen
+80:
+81: Hal Abelson
+82:
+83: Haskell Curry
+84:
+85:
+86: Herbert A. Simon
+87: Hector Garcia-Molina
+88: Herman Hollerith
+89:
+90:
+91:
+92:
+93: Nello Cristianini
+94:
+95:
+96: Nigel Shadbolt
+97: Neil J. Gunther
+98:
+99: Nils Nilsson
