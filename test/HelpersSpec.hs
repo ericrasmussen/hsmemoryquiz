@@ -5,6 +5,7 @@ import Util()
 import Helpers
 import Test.Hspec
 import Test.QuickCheck
+import Data.List (isInfixOf)
 
 
 spec :: Spec
@@ -23,4 +24,16 @@ spec = do
         "100%" -> x == y
         p      -> let f  = read (init p) :: Float
                       f' = 100 * (fromIntegral x / fromIntegral y)
-                  in  (f - f') < 0.2
+                  in  (f - f') < 0.1
+
+  describe "upper" $
+    it "uppercases a string once (idempotence)" $
+      property $ \x -> (upper . upper) x == upper x
+
+  describe "lower" $
+    it "lowercases a string once (idempotence)" $
+      property $ \x -> (lower . lower) x == lower x
+
+  describe "invalidCommand" $
+    it "formats an error message using an arbitrary string" $
+      property $ \s -> ("\"" ++ s ++ "\"") `isInfixOf` invalidCommand s

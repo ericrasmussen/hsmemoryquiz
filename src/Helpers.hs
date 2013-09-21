@@ -13,7 +13,6 @@
 module Helpers
        ( formatFraction
        , formatPercentage
-       , isWholeNumber
        , upper
        , lower
        , invalidCommand
