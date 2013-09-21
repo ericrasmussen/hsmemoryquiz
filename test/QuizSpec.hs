@@ -6,7 +6,6 @@ import Quiz
 import Util()
 import Test.Hspec
 import Test.QuickCheck
-import Test.QuickCheck.Monadic
 
 
 spec :: Spec
