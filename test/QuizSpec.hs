@@ -16,16 +16,22 @@ import qualified Data.Vector as V
 
 exported functions we still need to test:
 
-playGame
+scoreResponse
+checkQuestion
 
 -}
 
 spec :: Spec
 spec = do
-  describe "QuizState" $
+  describe "QuizState" $ do
     it "can be created anew with newQuizState" $ do
       score newQuizState `shouldBe` 0
       total newQuizState `shouldBe` 0
+
+    it "can be modified when scoring a response" $
+      property $ \x y b -> let st  = scoreResponse b (QuizState x y)
+                               mod = if b then 1 else 0
+                           in x + mod == score st && y + 1 == total st
 
   describe "Registry" $
     it "can be created with makeRegistry" $
