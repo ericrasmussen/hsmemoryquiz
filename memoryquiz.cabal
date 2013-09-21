@@ -22,7 +22,9 @@ executable memoryquiz
                , Letter
                , Parser
                , Quiz
+               , Game
                , Instances
+               , Helpers
 
   build-depends: base        >= 4.5
                , mtl         >= 2.1.2
@@ -44,7 +46,9 @@ Executable runtests
                  , Parser
                  , Quiz
                  , Util
+                 , Game
                  , Instances
+                 , Helpers
 
     build-depends: base        >= 4.5
                  , mtl         >= 2.1.2

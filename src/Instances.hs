@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, UndecidableInstances, GeneralizedNewtypeDeriving, RankNTypes #-}
+{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, UndecidableInstances, RankNTypes #-}
 
 -- |
 -- Module      : Instances
@@ -101,8 +101,8 @@ instance MonadState s m => MonadState s (H.InputT m) where
   put = lift . put
 
 instance MonadReader r m => MonadReader r (H.InputT m) where
-  ask       = lift ask
-  local f m = H.mapInputT (local f) m
+  ask     = lift ask
+  local f = H.mapInputT (local f)
 
 -- -----------------------------------------------------------------------------
 -- * Working with InputT

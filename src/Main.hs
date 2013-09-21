@@ -1,4 +1,4 @@
-import Quiz (runGame)
+import Game   (runGame)
 import Config (cmdArgs, config, fromConfig)
 
 
