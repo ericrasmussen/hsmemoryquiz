@@ -27,15 +27,12 @@ module Quiz
        )
        where
 
+import Helpers
 import Instances
 import Association
-
-import Numeric (showFFloat)
-
 import Control.Monad.Error
 import Control.Monad.Reader
 import Control.Monad.State.Strict
-
 
 
 -- -----------------------------------------------------------------------------
@@ -140,24 +137,3 @@ makeQuestionGen toQuestion checkAnswer assoc = Question {
 -- | Helper to test a given Response against a Question's check answer predicate
 checkResponse :: Question -> Response -> Result
 checkResponse (Question {evaluator=eval}) = eval
-
-
--- -----------------------------------------------------------------------------
--- * Helper functions private to this module
-
--- | Formats integers x and y as a string in the form "x/y"
-formatFraction :: Int -> Int -> String
-formatFraction x y = show x ++ "/" ++ show y
-
--- | Divides two Integers as doubles and formats the result as a percentage in
--- the form "x.yz%". Although you can't divide by 0, we handle the x / 0 case by
--- displaying "0%".
-formatPercentage :: Int -> Int -> String
-formatPercentage x 0 = "0%"
-formatPercentage x y = showFFloat (Just decimals) percentage "%"
-  where percentage = 100.0 * (fromIntegral x / fromIntegral y)
-        decimals   = if isWhole percentage then 0 else 2
-
--- | Helper to check if a percentage (fractional) is a whole number
-isWhole :: RealFrac a => a -> Bool
-isWhole x = floor x == ceiling x

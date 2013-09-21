@@ -25,15 +25,11 @@ import Game
 import Digit
 import Letter
 import Parser
+import Helpers
 import Association
-
-import Data.Char   (toLower)
-
-import System.Console.CmdArgs
-
 import Control.Applicative
-
-import System.IO.Error          (tryIOError)
+import System.Console.CmdArgs
+import System.IO.Error (tryIOError)
 
 
 -- -----------------------------------------------------------------------------
@@ -139,14 +135,3 @@ readFileSafe fp = do
 leftToString :: Show a => Either a b -> Either String b
 leftToString = either (Left . show) (Right . id)
 
-
--- -----------------------------------------------------------------------------
--- * Helpers
-
--- | Helper function to lowercase a String
-lower :: String -> String
-lower = map toLower
-
--- | Formats a standard error message for an unrecognized command line arg
-invalidCommand :: String -> String
-invalidCommand s = "Option \"" ++ s ++ "\" not recognized"

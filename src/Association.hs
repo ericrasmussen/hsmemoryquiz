@@ -26,9 +26,10 @@ module Association
        )
        where
 
+
 import Digit
 import Letter
-import Data.Char   (toUpper)
+import Helpers
 import Data.List   (isInfixOf)
 import Data.Vector (Vector)
 
@@ -94,12 +95,6 @@ toResult p a s = if p s
                  then Right "Correct!"
                  else Left $ "We were looking for: " ++ a
 
--- -----------------------------------------------------------------------------
--- * Unexported helper functions
-
--- | Helper function to uppercase a String
-upper :: String -> String
-upper = map toUpper
 
 -- | Check if a supplied answer is "close enough" to the real answer. In this
 -- case, that means the user's input is at least three characters and is an
