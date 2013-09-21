@@ -3,10 +3,11 @@ module GameSpec
 
 
 import Quiz
-import Game
 import Util()
 import Test.Hspec
 import Test.QuickCheck
+import Test.QuickCheck.Monadic
+
 import Data.Ix (inRange)
 import qualified Data.Vector as V
 
