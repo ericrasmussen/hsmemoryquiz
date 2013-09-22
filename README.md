@@ -174,7 +174,7 @@ your answers will be checked based on the answer type:
 
 | Answer Type | Methodology                                                    |
 |-------------|----------------------------------------------------------------|
-| digits      | require both digits (ex. "> CB: 32")                           |
+| digits      | requires both digits (ex. "> CB: 32")                           |
 | letters     | requires both letters, case insensitive (ex. "> 32: cB")       |
 | mnemonics   | requires at least 3 characters from the string, case insensitive (ex. "> CB: charlie")|
 
