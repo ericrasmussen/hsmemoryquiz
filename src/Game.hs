@@ -47,6 +47,7 @@ data Game = Continue | Stop
 -- prints the results
 runGame :: Registry -> IO ()
 runGame registry = do
+  putStrLn "Welcome! Quit at any time with \":q\" or by pressing ctrl-c"
   res <- runQuiz registry newQuizState playGame
   case res of
     (Left  e, q) -> putStrLn $ formatError e q
