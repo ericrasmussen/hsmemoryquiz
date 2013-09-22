@@ -1,4 +1,4 @@
-name:                memoryquiz
+name:                hsmemoryquiz
 version:             0.1.0.0
 synopsis:            a memory quiz game
 description:         a demo haskell app for learning the Dominic system
@@ -11,7 +11,7 @@ copyright:           2013 Eric Rasmussen
 build-type:          Simple
 cabal-version:       >=1.8
 
-executable memoryquiz
+executable hsmemoryquiz
   Hs-Source-Dirs: src
   main-is: Main.hs
 
@@ -34,7 +34,7 @@ executable memoryquiz
                , random      >= 1.0.1.1
                , haskeline   >= 0.7.0.3
 
-Executable runtests
+Executable hsmq-runtests
     hs-source-dirs: test, src
     main-is: Spec.hs
 
