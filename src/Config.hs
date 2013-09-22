@@ -54,9 +54,9 @@ helpArgs = Config {
 
 -- | Add additional detail to the --help output
 config = helpArgs
-         &= help    "Quiz yourself on your Dominic memory associations"
-         &= summary "MemoryQuiz (C) Eric Rasmussen 2013"
-         &= program "MemoryQuiz"
+         &= help    "Practice your Dominic memory associations"
+         &= summary "hsmemoryquiz 0.1 (C) Eric Rasmussen 2013"
+         &= program "hsmemoryquiz"
 
 
 -- -----------------------------------------------------------------------------
@@ -87,18 +87,18 @@ eitherRegistry questionGen assocs ind = makeRegistry
 -- | Will try to build a question viewer based on the command line arg
 eitherView :: String -> Either String RenderAssociation
 eitherView s = case lower s of
-  "digits"   -> Right $ \assoc -> show (view assoc :: DigitPair)
-  "letters"  -> Right $ \assoc -> show (view assoc :: LetterPair)
-  "mnemonic" -> Right $ \assoc -> show (view assoc :: Mnemonic)
-  _          -> Left  $ invalidCommand s
+  "digits"    -> Right $ \assoc -> show (view assoc :: DigitPair)
+  "letters"   -> Right $ \assoc -> show (view assoc :: LetterPair)
+  "mnemonics" -> Right $ \assoc -> show (view assoc :: Mnemonic)
+  _           -> Left  $ invalidCommand s
 
 -- | Will try to build an answer checker based on the command line arg
 eitherAnswer :: String -> Either String (Association -> String -> Result)
 eitherAnswer s = case lower s of
-  "digits"   -> Right $ \assoc -> checkAnswer (view assoc :: DigitPair)
-  "letters"  -> Right $ \assoc -> checkAnswer (view assoc :: LetterPair)
-  "mnemonic" -> Right $ \assoc -> checkAnswer (view assoc :: Mnemonic)
-  _          -> Left  $ invalidCommand s
+  "digits"    -> Right $ \assoc -> checkAnswer (view assoc :: DigitPair)
+  "letters"   -> Right $ \assoc -> checkAnswer (view assoc :: LetterPair)
+  "mnemonics" -> Right $ \assoc -> checkAnswer (view assoc :: Mnemonic)
+  _           -> Left  $ invalidCommand s
 
 -- | Will try to choose an indexing strategy for choosing the next Association
 -- during a quiz.
