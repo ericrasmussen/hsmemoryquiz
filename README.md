@@ -94,13 +94,12 @@ sequence of three composite images that you can learn to quickly decode.
 These steps will eventually be simplified, but in the meantime, here's how to
 get up and running:
 
-```
-1) Install the [Haskell Platform](http://www.haskell.org/platform/)
-2) $ git clone https://github.com/ericrasmussen/hsmemoryquiz.git
-3) $ cd hsmemoryquiz
-4) $ cabal install
-5) Test that it works with: $ hsmemoryquiz --help
-```
+* Install the [Haskell Platform](http://www.haskell.org/platform/)
+* $ git clone https://github.com/ericrasmussen/hsmemoryquiz.git
+* $ cd hsmemoryquiz
+* $ cabal install
+* Test that it works with: $ hsmemoryquiz --help
+
 
 ### Using hsmemoryquiz
 
@@ -119,14 +118,14 @@ character in the association text).
 
 In the root of this repository I have a file named dominic_sample.txt, comprised
 of computer scientists (mostly borrowed from [this
-page](https://en.wikipedia.org/wiki/List_of_computer_scientists) on Wikipedia.
+page](https://en.wikipedia.org/wiki/List_of_computer_scientists) on Wikipedia).
 
 To be clear: I don't recommend you try to memorize this list. That would only
 help you memorize computer scientists. The goal is to fill it in with images
 you find memorable, funny, or inspiring. But our sample file is convenient
 for testing out the application.
 
-It looks like this:
+It looks a little like this:
 
 ```
 # dominic_sample.txt
@@ -164,7 +163,7 @@ on the ordering in your text file), or the default, "random".
 
 You can quit by pressing ctrl+c or typing ":q" at the prompt. The console
 will also attempt to catch other exceptions and still print the final score,
-including EOF (typically ctrl+d on *nix or ctrl+z for Windows).
+such as the EOF exception (typically ctrl+d on *nix or ctrl+z for Windows).
 
 
 #### Scoring
