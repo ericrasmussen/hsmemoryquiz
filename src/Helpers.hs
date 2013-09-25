@@ -52,5 +52,6 @@ lower :: String -> String
 lower = map toLower
 
 -- | Formats a standard error message for an unrecognized command line arg
+-- TODO: add a nicer message for the empty string
 invalidCommand :: String -> String
 invalidCommand s = "Option \"" ++ s ++ "\" not recognized"

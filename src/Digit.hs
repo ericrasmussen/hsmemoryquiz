@@ -7,7 +7,7 @@
 -- Stability   : experimental
 -- Portability : GHC
 --
--- Modeling the digits 0-9 as unique types.
+-- Modeling the digits 0-9 in a new data type
 
 module Digit
        ( Digit (..)
@@ -53,7 +53,7 @@ fromChar '8' = Just Eight
 fromChar '9' = Just Nine
 fromChar _   = Nothing
 
--- | Represent pairs of digits we'll use in the Dominic system
+-- | Represent the pairs of digits we'll use in the Dominic system
 data DigitPair = DigitPair Digit Digit
   deriving Eq
 

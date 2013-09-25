@@ -75,7 +75,7 @@ playRound assoc = do
     else updateResult result >> return Continue
 
 -- | After the user answers a question, we use updateResult to print the result
--- and update the score.
+-- and update the score
 updateResult :: Result -> Quiz ()
 updateResult res = do
   st <- get
@@ -83,9 +83,9 @@ updateResult res = do
   put $ scoreResponse wasCorrect st
   outputStrLn msg
 
--- | Check the result to determine whether the user was correct (Right) or
--- incorrect (Left), and return it with the result message that will be
--- displayed to the user.
+-- | Check the result to determine whether the user's answer was correct, and
+-- return a boolean along with the string message to display to the user. For
+-- instance, returning (True, "Correct!") if the user answers correctly
 elimResult :: Result -> (Bool, String)
 elimResult = either (makeTuple False) (makeTuple True)
   where makeTuple = (,)
@@ -95,7 +95,7 @@ elimResult = either (makeTuple False) (makeTuple True)
 -- * Strategies for choosing Associations
 
 -- | Get the next Association using getIndex from the Registry, guarding
--- against poor implementations of getIndex.
+-- against poor implementations of getIndex
 nextAssociation :: Quiz Association
 nextAssociation = do
   env <- ask
@@ -106,7 +106,7 @@ nextAssociation = do
     Nothing -> throwError "Programmer error: out of bounds access attempt"
 
 
--- | Always choose a random Association
+-- | Always chooses a random Association
 indexRand :: Quiz Int
 indexRand = do
   len <- asks $ V.length . associations
@@ -136,11 +136,11 @@ formatSuccess :: QuizState -> String
 formatSuccess q = "Final score: " ++ show q
 
 -- | If an error was caught during a game run, display the error and the final
--- score
+-- score from before the error
 formatError :: String -> QuizState -> String
 formatError e q =  "Caught: " ++ e ++ "\nFinal score: " ++ show q
 
--- | Display a question in a prompt format
+-- | Format a question as a prompt
 questionPrompt :: Question -> String
 questionPrompt Question { question=q } = "> " ++ q ++ ": "
 

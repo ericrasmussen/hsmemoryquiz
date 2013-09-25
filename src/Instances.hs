@@ -10,8 +10,8 @@
 -- Stability   : experimental
 -- Portability : GHC
 --
--- Newtype wrapper for our quiz stack, along with the QuizState that keeps score
--- throughout the game.
+-- A typeclass for Haskeline's InputT transformer, along with monad instances
+-- we need for the derive statements in the Quiz module
 
 
 {-

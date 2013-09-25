@@ -37,7 +37,7 @@ import Control.Applicative hiding ((<|>), many, optional)
 -- * Our very handy char parsers
 
 -- | Consumes the first two characters from the input and tries to convert them
--- to a DigitPair.
+-- to a DigitPair
 parseDigitPair :: GenParser Char state DigitPair
 parseDigitPair = do
   left  <- anyChar
@@ -60,9 +60,10 @@ parseAssociation = do
 parseAssociationDB :: GenParser Char state AssociationDB
 parseAssociationDB = Vector.fromList <$> many1 parseAssociation
 
--- | Attempt to parse a vector of Associations from a file
+-- | Attempt to parse a vector of Associations (an AssociationDB) from a file
 runParse :: String -> Either ParseError AssociationDB
 runParse = parse parseAssociationDB "(file)"
+
 
 -- -----------------------------------------------------------------------------
 -- * Helper parsers (not exported)
@@ -73,6 +74,6 @@ eol =   char '\n'
     <|> char '\r' *> option '\n' (char '\n')
 
 -- | Void parser to detect the end of input or a line ending. This makes
--- trailing newlines optional in the associations text file.
+-- trailing newlines optional in the associations text file
 endOfInput :: Monad m => ParsecT String u m ()
 endOfInput = eof <|> void eol

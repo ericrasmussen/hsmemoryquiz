@@ -38,7 +38,8 @@ import Control.Monad.State.Strict
 -- -----------------------------------------------------------------------------
 -- * Quiz types and functions on quizzes
 
--- | The exported Quiz type that wraps our ErrorT, StateT, and IO stack
+-- | The exported Quiz type that wraps our ErrorT, InputT, ReaderT, StateT, and
+-- IO stack
 newtype Quiz a = Quiz {
   getQuiz :: ErrorT String (InputT (ReaderT Registry (StateT QuizState IO))) a
   } deriving ( Monad
@@ -50,7 +51,8 @@ newtype Quiz a = Quiz {
              , MonadReader Registry
              )
 
--- | Takes a starting QuizState and evaluates a Quiz block
+-- | Takes a starting Registry and Quiz State, then uses it to evaluate a Quiz
+-- block
 runQuiz :: Registry -> QuizState -> Quiz a -> IO (Either String a, QuizState)
 runQuiz registry scoreBoard k = do
   let err = runErrorT $ getQuiz k
@@ -115,7 +117,7 @@ makeRegistry gen assocs ind = Registry {
 -- * Questions!
 
 -- | Our primary question type with a showable question and a predicate to check
--- an answer
+-- a response
 data Question = Question {
     question  :: String
   , evaluator :: Response -> Result
@@ -135,5 +137,7 @@ makeQuestionGen toQuestion checkAnswer assoc = Question {
   }
 
 -- | Helper to test a given Response against a Question's check answer predicate
+-- (currently only uses the Question's evaluator, but wrapping it in a function
+-- is a more flexible API if we change it later)
 checkResponse :: Question -> Response -> Result
 checkResponse (Question {evaluator=eval}) = eval
