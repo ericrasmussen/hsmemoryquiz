@@ -192,3 +192,10 @@ to store everything!), but this system is useful in other ways too. In
 particular, it has been used as the basis for a memory palace called "Hotel
 Dominic". You can read more at
 [MemoriseThis!](http://www.memorisethis.co.uk/techniques/images/dominic)
+
+
+### More Information
+
+I added an overview and more details about the motivation for this project
+on: http://chromaticleaves.com/posts/haskell-memory-quiz.html
+
